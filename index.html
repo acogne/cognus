@@ -517,11 +517,14 @@
 
 <div id="toast"></div>
 
+<script src="config.js"></script>
 <script>
-const CLIENT_ID = '351907380300-i306mljg4r3j9vu5876s6kav8gp42et7.apps.googleusercontent.com';
-const SHEET_ID  = '1-WnZLizJaWQqeVq7rO1u-LrTCGR725ejDmxwz3j_z5w';
-const SHEET_TAB = 'One FM';
-const WEBHOOK   = 'https://hook.eu2.make.com/lwvcvjkdha74brmsnei1pq53gnq9sid2';
+// Les constantes CLIENT_ID, SHEET_ID, SHEET_TAB et WEBHOOK
+// sont chargées depuis config.js (non versionné — voir .gitignore)
+const CLIENT_ID = CONFIG.CLIENT_ID;
+const SHEET_ID  = CONFIG.SHEET_ID;
+const SHEET_TAB = CONFIG.SHEET_TAB;
+const WEBHOOK   = CONFIG.WEBHOOK;
 const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
 // col index in sheet (1-based for API): A=titre, B=resume, C=excerpt, D=transcript, E=date, F=etat
