@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -549,11 +549,12 @@ let pendingPublish = null;
 
 function nowISO() { return new Date().toISOString().substring(0, 16); }
 function formatModDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (isNaN(d)) return '';
-  const p = n => String(n).padStart(2, '0');
-  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} à ${p(d.getHours())}:${p(d.getMinutes())}`;
+  const d = iso ? new Date(iso) : new Date();
+  if (isNaN(d)) return '—';
+  const tz = { timeZone: 'Europe/Zurich' };
+  const date = d.toLocaleDateString('fr-CH', { ...tz, day: '2-digit', month: '2-digit', year: 'numeric' });
+  const time = d.toLocaleTimeString('fr-CH', { ...tz, hour: '2-digit', minute: '2-digit' });
+  return `${date} à ${time}`;
 }
 
 // ── GOOGLE AUTH ──────────────────────────────────────────────────────────────
@@ -763,7 +764,7 @@ function renderEpisodes() {
           ${ep.excerpt ? `<div class="episode-excerpt">${escHtml(shortExcerpt)}</div>` : ''}
         </div>
         <div class="episode-actions">
-          <span class="last-modified" id="lastmod-${ep.rowIndex}">${ep.dateModification ? 'Modifié le ' + formatModDate(ep.dateModification) : ''}</span>
+          <span class="last-modified" id="lastmod-${ep.rowIndex}">Modifié le ${ep.dateModification ? formatModDate(ep.dateModification) : formatModDate()}</span>
           <div class="episode-btns" id="btns-${ep.rowIndex}">
             ${!isPublished ? `
               <button class="btn-publish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex})" id="pub-${ep.rowIndex}">
