@@ -547,9 +547,16 @@ let tokenClient, accessToken = null;
 let allEpisodes = [], currentFilter = 'all';
 let pendingPublish = null;
 
-function nowISO() { return new Date().toISOString().substring(0, 16); }
+function nowISO() { return new Date().toISOString(); } // UTC explicite avec Z
 function formatModDate(iso) {
-  const d = iso ? new Date(iso) : new Date();
+  let d;
+  if (!iso) {
+    d = new Date();
+  } else {
+    // Les anciens enregistrements n'ont pas de Z → les forcer en UTC
+    const s = /Z|[+-]\d{2}:\d{2}$/.test(iso) ? iso : iso + ':00Z';
+    d = new Date(s);
+  }
   if (isNaN(d)) return '—';
   const tz = { timeZone: 'Europe/Zurich' };
   const date = d.toLocaleDateString('fr-CH', { ...tz, day: '2-digit', month: '2-digit', year: 'numeric' });
