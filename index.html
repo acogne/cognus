@@ -37,7 +37,6 @@
     line-height: 1.6;
   }
 
-  /* HEADER */
   header {
     background: var(--black);
     padding: 0 2rem;
@@ -72,11 +71,7 @@
     letter-spacing: 0.12em;
   }
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
+  .header-right { display: flex; align-items: center; gap: 1rem; }
 
   #user-info {
     display: none;
@@ -86,17 +81,8 @@
     font-size: 0.85rem;
   }
 
-  #user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid var(--gray-700);
-  }
-
-  #user-name {
-    color: var(--white);
-    font-size: 0.85rem;
-  }
+  #user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--gray-700); }
+  #user-name { color: var(--white); font-size: 0.85rem; }
 
   #btn-signout {
     background: none;
@@ -109,13 +95,8 @@
     cursor: pointer;
     transition: all 0.15s;
   }
+  #btn-signout:hover { border-color: var(--gray-400); color: var(--white); }
 
-  #btn-signout:hover {
-    border-color: var(--gray-400);
-    color: var(--white);
-  }
-
-  /* LOGIN SCREEN */
   #login-screen {
     display: flex;
     align-items: center;
@@ -136,97 +117,56 @@
   }
 
   .login-icon {
-    width: 56px;
-    height: 56px;
+    width: 56px; height: 56px;
     background: var(--red-pale);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     margin: 0 auto 1.5rem;
     font-size: 1.5rem;
   }
 
   .login-card h2 {
     font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-    color: var(--black);
+    font-weight: 700; font-size: 1.3rem;
+    margin-bottom: 0.5rem; color: var(--black);
   }
 
-  .login-card p {
-    color: var(--gray-400);
-    font-size: 0.9rem;
-    margin-bottom: 2rem;
-  }
+  .login-card p { color: var(--gray-400); font-size: 0.9rem; margin-bottom: 2rem; }
 
   #btn-login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 12px 20px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 12px 20px;
     background: var(--white);
     border: 1.5px solid var(--gray-200);
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--gray-700);
-    cursor: pointer;
+    font-size: 0.95rem; font-weight: 500;
+    color: var(--gray-700); cursor: pointer;
     transition: all 0.15s;
     box-shadow: var(--shadow);
   }
+  #btn-login:hover { border-color: var(--gray-400); box-shadow: var(--shadow-lg); }
 
-  #btn-login:hover {
-    border-color: var(--gray-400);
-    box-shadow: var(--shadow-lg);
-  }
+  .google-icon { width: 20px; height: 20px; }
 
-  .google-icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* MAIN DASHBOARD */
-  #dashboard {
-    display: none;
-    padding: 2rem;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
+  #dashboard { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
 
   .dashboard-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
   }
 
   .dashboard-title {
     font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1.4rem;
-    color: var(--black);
+    font-weight: 700; font-size: 1.4rem; color: var(--black);
   }
 
-  .dashboard-title span {
-    color: var(--gray-400);
-    font-weight: 400;
-    font-size: 1rem;
-    margin-left: 0.5rem;
-  }
+  .dashboard-title span { color: var(--gray-400); font-weight: 400; font-size: 1rem; margin-left: 0.5rem; }
 
-  /* STATS */
   .stats-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    margin-bottom: 1.5rem;
+    gap: 12px; margin-bottom: 1.5rem;
   }
 
   .stat-card {
@@ -237,81 +177,41 @@
     box-shadow: var(--shadow);
   }
 
-  .stat-label {
-    font-size: 0.8rem;
-    color: var(--gray-400);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 4px;
-  }
-
-  .stat-value {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--black);
-  }
-
+  .stat-label { font-size: 0.8rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--black); }
   .stat-card.red .stat-value { color: var(--red); }
   .stat-card.green .stat-value { color: var(--green); }
 
-  /* FILTERS */
-  .filters {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
+  .filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
 
   .filter-btn {
-    padding: 6px 14px;
-    border-radius: 20px;
+    padding: 6px 14px; border-radius: 20px;
     border: 1px solid var(--gray-200);
     background: var(--white);
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    color: var(--gray-700);
-    cursor: pointer;
-    transition: all 0.15s;
+    font-size: 0.85rem; color: var(--gray-700);
+    cursor: pointer; transition: all 0.15s;
   }
-
   .filter-btn:hover { border-color: var(--gray-400); }
+  .filter-btn.active { background: var(--black); border-color: var(--black); color: var(--white); }
 
-  .filter-btn.active {
-    background: var(--black);
-    border-color: var(--black);
-    color: var(--white);
-  }
-
-  /* REFRESH */
   #btn-refresh {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    display: flex; align-items: center; gap: 6px;
     padding: 8px 16px;
     background: var(--white);
     border: 1px solid var(--gray-200);
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    color: var(--gray-700);
-    cursor: pointer;
-    transition: all 0.15s;
+    font-size: 0.85rem; color: var(--gray-700);
+    cursor: pointer; transition: all 0.15s;
     box-shadow: var(--shadow);
   }
-
   #btn-refresh:hover { border-color: var(--gray-400); }
   #btn-refresh svg { transition: transform 0.4s; }
   #btn-refresh.loading svg { animation: spin 0.8s linear infinite; }
-
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* EPISODES LIST */
-  #episodes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+  #episodes-list { display: flex; flex-direction: column; gap: 12px; }
 
   .episode-card {
     background: var(--white);
@@ -321,294 +221,210 @@
     box-shadow: var(--shadow);
     transition: box-shadow 0.15s;
   }
-
   .episode-card:hover { box-shadow: var(--shadow-lg); }
-
-  .episode-card.published {
-    border-left: 3px solid var(--green);
-  }
-
-  .episode-card.pending {
-    border-left: 3px solid var(--amber);
-  }
+  .episode-card.published { border-left: 3px solid var(--green); }
+  .episode-card.pending   { border-left: 3px solid var(--amber); }
 
   .episode-header {
-    display: flex;
-    align-items: flex-start;
+    display: flex; align-items: flex-start;
     justify-content: space-between;
     padding: 1.2rem 1.5rem;
-    gap: 1rem;
-    cursor: pointer;
+    gap: 1rem; cursor: pointer;
   }
 
-  .episode-meta {
-    flex: 1;
-    min-width: 0;
-  }
+  .episode-meta { flex: 1; min-width: 0; }
 
   .episode-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
+    display: flex; align-items: center;
+    gap: 10px; margin-bottom: 6px; flex-wrap: wrap;
   }
 
-  .episode-date {
-    font-size: 0.8rem;
-    color: var(--gray-400);
-    font-weight: 500;
-  }
+  .episode-date { font-size: 0.8rem; color: var(--gray-400); font-weight: 500; }
 
   .status-badge {
-    font-size: 0.72rem;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-size: 0.72rem; padding: 3px 9px; border-radius: 20px;
+    font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
   }
-
-  .status-badge.pending {
-    background: var(--amber-pale);
-    color: var(--amber);
-  }
-
-  .status-badge.published {
-    background: var(--green-pale);
-    color: var(--green);
-  }
+  .status-badge.pending   { background: var(--amber-pale); color: var(--amber); }
+  .status-badge.published { background: var(--green-pale);  color: var(--green); }
 
   .episode-title {
     font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--black);
-    line-height: 1.4;
+    font-weight: 600; font-size: 1rem; color: var(--black); line-height: 1.4;
   }
 
   .episode-excerpt {
-    font-size: 0.85rem;
-    color: var(--gray-400);
-    margin-top: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.85rem; color: var(--gray-400); margin-top: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  .episode-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
+  .episode-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
   .btn-toggle {
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
     background: var(--gray-50);
     border: 1px solid var(--gray-100);
     border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    color: var(--gray-400);
-    font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s;
+    color: var(--gray-400); font-size: 0.85rem;
   }
-
   .btn-toggle:hover { background: var(--gray-100); color: var(--gray-700); }
 
-  /* PUBLISH BUTTON */
   .btn-publish {
-    display: flex;
-    align-items: center;
-    gap: 7px;
+    display: flex; align-items: center; gap: 7px;
     padding: 8px 18px;
-    background: var(--red);
-    border: none;
+    background: var(--red); border: none;
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--white);
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
+    font-size: 0.85rem; font-weight: 500;
+    color: var(--white); cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
   }
-
   .btn-publish:hover { background: var(--red-dark); }
   .btn-publish:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+  .btn-publish.loading { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
 
-  .btn-publish.loading {
-    background: var(--gray-200);
-    color: var(--gray-400);
-    cursor: not-allowed;
-  }
-
-  /* EPISODE BODY (expandable) */
   .episode-body {
     display: none;
     border-top: 1px solid var(--gray-100);
     padding: 1.25rem 1.5rem;
   }
-
   .episode-body.open { display: block; }
 
   .data-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 1rem; margin-bottom: 1rem;
   }
-
-  @media (max-width: 640px) {
-    .data-grid { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 640px) { .data-grid { grid-template-columns: 1fr; } }
 
   .data-field label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--gray-400);
-    margin-bottom: 5px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--gray-400); margin-bottom: 5px;
   }
 
-  .data-field p {
-    font-size: 0.9rem;
-    color: var(--gray-700);
-    line-height: 1.55;
-  }
-
+  .data-field p { font-size: 0.9rem; color: var(--gray-700); line-height: 1.55; }
   .data-field.full { grid-column: 1 / -1; }
 
   .transcript-box {
     background: var(--gray-50);
     border: 1px solid var(--gray-100);
-    border-radius: 8px;
-    padding: 1rem;
-    font-size: 0.85rem;
-    color: var(--gray-700);
-    line-height: 1.65;
-    max-height: 280px;
-    overflow-y: auto;
-    white-space: pre-wrap;
+    border-radius: 8px; padding: 1rem;
+    font-size: 0.85rem; color: var(--gray-700);
+    line-height: 1.65; max-height: 280px;
+    overflow-y: auto; white-space: pre-wrap;
   }
 
-  /* EMPTY / LOADING STATES */
-  .state-box {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--gray-400);
+  /* INLINE EDIT */
+  .btn-edit-field {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px;
+    background: none; border: none;
+    cursor: pointer; color: var(--gray-200);
+    border-radius: 3px; padding: 0;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
   }
+  .btn-edit-field:hover { color: var(--gray-700); background: var(--gray-100); }
 
-  .state-box svg {
-    margin: 0 auto 1rem;
-    display: block;
-    opacity: 0.3;
+  .field-view { display: block; }
+  .field-edit { display: none; flex-direction: column; gap: 8px; }
+  .field-edit.active { display: flex; }
+  .field-view.hidden { display: none; }
+
+  .edit-textarea, .edit-input {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; color: var(--gray-700);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 6px; padding: 8px 10px;
+    line-height: 1.55; resize: vertical; outline: none;
+    transition: border-color 0.15s;
   }
+  .edit-textarea:focus, .edit-input:focus { border-color: var(--gray-400); }
+  .edit-textarea { min-height: 80px; }
+  .edit-textarea.tall { min-height: 200px; }
 
+  .edit-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+  .btn-save-field {
+    padding: 5px 14px;
+    background: var(--black); border: none;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    color: var(--white); cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-save-field:hover { opacity: 0.8; }
+  .btn-save-field:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-cancel-field {
+    padding: 5px 14px;
+    background: none;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; color: var(--gray-400);
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .btn-cancel-field:hover { border-color: var(--gray-400); color: var(--gray-700); }
+
+  /* STATES */
+  .state-box { text-align: center; padding: 4rem 2rem; color: var(--gray-400); }
+  .state-box svg { margin: 0 auto 1rem; display: block; opacity: 0.3; }
   .state-box p { font-size: 0.9rem; }
 
   /* TOAST */
   #toast {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: var(--black);
-    color: var(--white);
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    opacity: 0;
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--black); color: var(--white);
+    padding: 12px 20px; border-radius: 8px;
+    font-size: 0.9rem; opacity: 0;
     transform: translateY(8px);
     transition: all 0.25s;
-    z-index: 200;
-    max-width: 320px;
-    pointer-events: none;
+    z-index: 200; max-width: 320px; pointer-events: none;
   }
-
   #toast.show { opacity: 1; transform: translateY(0); }
   #toast.success { background: var(--green); }
-  #toast.error { background: var(--red); }
+  #toast.error   { background: var(--red); }
 
-  /* CONFIRM MODAL */
+  /* MODAL */
   #modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
+    display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.4);
-    z-index: 150;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
+    z-index: 150; align-items: center; justify-content: center; padding: 1rem;
   }
-
   #modal-overlay.open { display: flex; }
 
   .modal {
-    background: var(--white);
-    border-radius: 12px;
-    padding: 2rem;
-    max-width: 420px;
-    width: 100%;
+    background: var(--white); border-radius: 12px;
+    padding: 2rem; max-width: 420px; width: 100%;
     box-shadow: var(--shadow-lg);
   }
-
-  .modal h3 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .modal p {
-    color: var(--gray-400);
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .modal-title-preview {
-    color: var(--black);
-    font-weight: 500;
-  }
-
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-  }
+  .modal h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .modal p { color: var(--gray-400); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .modal-title-preview { color: var(--black); font-weight: 500; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
   .btn-cancel {
-    padding: 9px 18px;
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    color: var(--gray-700);
-    cursor: pointer;
-    transition: all 0.15s;
+    padding: 9px 18px; background: var(--white);
+    border: 1px solid var(--gray-200); border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    color: var(--gray-700); cursor: pointer; transition: all 0.15s;
   }
-
   .btn-cancel:hover { border-color: var(--gray-400); }
 
   .btn-confirm {
-    padding: 9px 18px;
-    background: var(--red);
-    border: none;
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--white);
-    cursor: pointer;
-    transition: all 0.15s;
+    padding: 9px 18px; background: var(--red); border: none;
+    border-radius: 8px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500;
+    color: var(--white); cursor: pointer; transition: all 0.15s;
   }
-
   .btn-confirm:hover { background: var(--red-dark); }
 </style>
 </head>
@@ -628,7 +444,6 @@
   </div>
 </header>
 
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-icon">🎙️</div>
@@ -646,7 +461,6 @@
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard">
   <div class="dashboard-header">
     <div>
@@ -690,7 +504,6 @@
   </div>
 </div>
 
-<!-- CONFIRMATION MODAL -->
 <div id="modal-overlay">
   <div class="modal">
     <h3>Publier cet épisode ?</h3>
@@ -702,23 +515,23 @@
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────────────────────
 const CLIENT_ID = '351907380300-i306mljg4r3j9vu5876s6kav8gp42et7.apps.googleusercontent.com';
 const SHEET_ID  = '1-WnZLizJaWQqeVq7rO1u-LrTCGR725ejDmxwz3j_z5w';
 const SHEET_TAB = 'One FM';
 const WEBHOOK   = 'https://hook.eu2.make.com/lwvcvjkdha74brmsnei1pq53gnq9sid2';
 const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
-// ─── STATE ────────────────────────────────────────────────────────────────────
+// col index in sheet (1-based for API): A=titre, B=resume, C=excerpt, D=transcript, E=date, F=etat
+const COL_MAP = { titre: 1, resume: 2, excerpt: 3, transcript: 4 };
+
 let tokenClient, accessToken = null;
 let allEpisodes = [], currentFilter = 'all';
-let pendingPublish = null;  // { rowIndex, episode }
+let pendingPublish = null;
 
-// ─── GOOGLE IDENTITY ──────────────────────────────────────────────────────────
+// ── GOOGLE AUTH ──────────────────────────────────────────────────────────────
 function loadGoogleScript() {
   const s = document.createElement('script');
   s.src = 'https://accounts.google.com/gsi/client';
@@ -768,37 +581,27 @@ function showDashboard() {
   document.getElementById('dashboard').style.display = 'block';
 }
 
-// ─── LOAD EPISODES ────────────────────────────────────────────────────────────
+// ── LOAD ─────────────────────────────────────────────────────────────────────
 async function loadEpisodes() {
   const btn = document.getElementById('btn-refresh');
   btn.classList.add('loading');
-
   try {
     const range = encodeURIComponent(`${SHEET_TAB}!A2:F1000`);
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
     const data = await r.json();
-
     if (data.error) throw new Error(data.error.message);
-
     const rows = data.values || [];
     allEpisodes = rows.map((row, i) => ({
-      rowIndex: i + 2,   // row 1 = header, data starts row 2
-      titre:      row[0] || '',
-      resume:     row[1] || '',
-      excerpt:    row[2] || '',
-      transcript: row[3] || '',
+      rowIndex: i + 2,
+      titre:       row[0] || '',
+      resume:      row[1] || '',
+      excerpt:     row[2] || '',
+      transcript:  row[3] || '',
       dateCreation: row[4] || '',
-      etat:       row[5] || 'A vérifier'
+      etat:        row[5] || 'A vérifier'
     }));
-
-    // Sort by dateCreation desc (most recent first)
-    allEpisodes.sort((a, b) => {
-      const da = parseDate(a.dateCreation);
-      const db = parseDate(b.dateCreation);
-      return db - da;
-    });
-
+    allEpisodes.sort((a, b) => parseDate(b.dateCreation) - parseDate(a.dateCreation));
     updateStats();
     renderEpisodes();
   } catch(e) {
@@ -806,7 +609,7 @@ async function loadEpisodes() {
     document.getElementById('episodes-list').innerHTML = `
       <div class="state-box">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <p>Impossible de charger les données. Vérifie les permissions du Sheet.</p>
+        <p>Impossible de charger les données.</p>
       </div>`;
   } finally {
     btn.classList.remove('loading');
@@ -815,8 +618,7 @@ async function loadEpisodes() {
 
 function parseDate(str) {
   if (!str) return 0;
-  // Format: "26. mai 2026 06:21" or ISO or various
-  const months = { jan:0, fév:1, feb:1, mar:2, avr:3, apr:3, mai:4, may:4, juin:5, jun:5, juil:6, jul:6, aoû:7, aug:7, sep:8, oct:9, nov:10, déc:11, dec:11 };
+  const months = { jan:0,'fév':1,feb:1,mar:2,'avr':3,apr:3,mai:4,may:4,juin:5,jun:5,juil:6,jul:6,'aoû':7,aug:7,sep:8,oct:9,nov:10,'déc':11,dec:11 };
   const m = str.match(/(\d{1,2})\.\s*(\w+)\s+(\d{4})\s+(\d{2}):(\d{2})/);
   if (m) {
     const mon = months[m[2].toLowerCase().substring(0,3)] ?? 0;
@@ -835,18 +637,48 @@ function formatDate(str) {
 function updateStats() {
   const total = allEpisodes.length;
   const pending = allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier').length;
-  const published = allEpisodes.filter(e => e.etat === 'Publié' || e.etat === 'Publier').length;
+  const published = total - pending;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-pending').textContent = pending;
   document.getElementById('stat-published').textContent = published;
   document.getElementById('episode-count').textContent = `(${total})`;
 }
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
+// ── RENDER ───────────────────────────────────────────────────────────────────
+const PENCIL_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+
+function editableField(rowIndex, fieldKey, label, value, isTextarea, tall) {
+  const id = `field-${rowIndex}-${fieldKey}`;
+  const inputHtml = isTextarea
+    ? `<textarea class="edit-textarea${tall ? ' tall' : ''}" id="inp-${id}">${escHtml(value)}</textarea>`
+    : `<input class="edit-input" type="text" id="inp-${id}" value="${escHtml(value)}">`;
+
+  const displayContent = isTextarea && fieldKey === 'transcript'
+    ? `<div class="transcript-box">${escHtml(value) || '—'}</div>`
+    : `<p>${escHtml(value) || '—'}</p>`;
+
+  return `
+    <div class="data-field${isTextarea ? ' full' : ''}" id="df-${id}">
+      <label>
+        ${label}
+        <button class="btn-edit-field" onclick="startEdit('${id}','${fieldKey}',${rowIndex})" title="Modifier" aria-label="Modifier ${label}">
+          ${PENCIL_SVG}
+        </button>
+      </label>
+      <div class="field-view" id="view-${id}">${displayContent}</div>
+      <div class="field-edit" id="edit-${id}">
+        ${inputHtml}
+        <div class="edit-actions">
+          <button class="btn-cancel-field" onclick="cancelEdit('${id}')">Annuler</button>
+          <button class="btn-save-field" id="save-${id}" onclick="saveField('${id}','${fieldKey}',${rowIndex})">Enregistrer</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderEpisodes() {
   const list = document.getElementById('episodes-list');
   let filtered = allEpisodes;
-
   if (currentFilter === 'pending')   filtered = allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier');
   if (currentFilter === 'published') filtered = allEpisodes.filter(e => e.etat === 'Publié' || e.etat === 'Publier');
 
@@ -857,7 +689,7 @@ function renderEpisodes() {
 
   list.innerHTML = filtered.map(ep => {
     const isPublished = ep.etat === 'Publié' || ep.etat === 'Publier';
-    const cardClass = isPublished ? 'published' : 'pending';
+    const cardClass  = isPublished ? 'published' : 'pending';
     const badgeClass = isPublished ? 'published' : 'pending';
     const badgeLabel = isPublished ? 'Publié' : 'À vérifier';
     const shortExcerpt = ep.excerpt.length > 120 ? ep.excerpt.substring(0,120) + '…' : ep.excerpt;
@@ -887,26 +719,14 @@ function renderEpisodes() {
       </div>
       <div class="episode-body" id="body-${ep.rowIndex}">
         <div class="data-grid">
-          <div class="data-field">
-            <label>Titre</label>
-            <p>${escHtml(ep.titre) || '—'}</p>
-          </div>
+          ${editableField(ep.rowIndex, 'titre',      'Titre',        ep.titre,       false, false)}
           <div class="data-field">
             <label>Date création</label>
             <p>${formatDate(ep.dateCreation) || '—'}</p>
           </div>
-          <div class="data-field full">
-            <label>Résumé</label>
-            <p>${escHtml(ep.resume) || '—'}</p>
-          </div>
-          <div class="data-field full">
-            <label>Excerpt</label>
-            <p>${escHtml(ep.excerpt) || '—'}</p>
-          </div>
-          <div class="data-field full">
-            <label>Transcript</label>
-            <div class="transcript-box">${escHtml(ep.transcript) || '—'}</div>
-          </div>
+          ${editableField(ep.rowIndex, 'resume',     'Résumé',       ep.resume,      true,  false)}
+          ${editableField(ep.rowIndex, 'excerpt',    'Excerpt',      ep.excerpt,     true,  false)}
+          ${editableField(ep.rowIndex, 'transcript', 'Transcript',   ep.transcript,  true,  true)}
         </div>
       </div>
     </div>`;
@@ -922,13 +742,78 @@ function toggleBody(rowIndex) {
 
 function escHtml(str) {
   return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ─── FILTERS ──────────────────────────────────────────────────────────────────
+// ── INLINE EDIT ───────────────────────────────────────────────────────────────
+function startEdit(id, fieldKey, rowIndex) {
+  const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
+  if (!ep) return;
+  document.getElementById('view-' + id).classList.add('hidden');
+  const editEl = document.getElementById('edit-' + id);
+  editEl.classList.add('active');
+  const inp = document.getElementById('inp-' + id);
+  inp.value = ep[fieldKey];
+  inp.focus();
+}
+
+function cancelEdit(id) {
+  document.getElementById('view-' + id).classList.remove('hidden');
+  document.getElementById('edit-' + id).classList.remove('active');
+}
+
+async function saveField(id, fieldKey, rowIndex) {
+  const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
+  if (!ep) return;
+  const inp = document.getElementById('inp-' + id);
+  const newVal = inp.value;
+  const saveBtn = document.getElementById('save-' + id);
+  saveBtn.disabled = true;
+  saveBtn.textContent = '…';
+
+  try {
+    const colLetter = String.fromCharCode(64 + COL_MAP[fieldKey]); // A=1→A, B=2→B…
+    const range = encodeURIComponent(`${SHEET_TAB}!${colLetter}${rowIndex}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
+    const r = await fetch(url, {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [[newVal]] })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+
+    // Update local state
+    ep[fieldKey] = newVal;
+
+    // Update view display
+    cancelEdit(id);
+    const viewEl = document.getElementById('view-' + id);
+    if (fieldKey === 'transcript') {
+      viewEl.innerHTML = `<div class="transcript-box">${escHtml(newVal) || '—'}</div>`;
+    } else {
+      viewEl.innerHTML = `<p>${escHtml(newVal) || '—'}</p>`;
+    }
+
+    // If titre changed, also update the card header
+    if (fieldKey === 'titre') {
+      const card = document.querySelector(`.episode-card[data-row="${rowIndex}"]`);
+      if (card) {
+        const titleEl = card.querySelector('.episode-title');
+        if (titleEl) titleEl.textContent = newVal || '';
+      }
+    }
+
+    showToast('✓ Champ mis à jour', 'success');
+  } catch(e) {
+    showToast('Erreur : ' + e.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Enregistrer';
+  }
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -940,7 +825,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
 document.getElementById('btn-refresh').addEventListener('click', loadEpisodes);
 
-// ─── CONFIRM MODAL ────────────────────────────────────────────────────────────
+// ── CONFIRM MODAL ─────────────────────────────────────────────────────────────
 function openConfirm(rowIndex) {
   const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
   if (!ep) return;
@@ -968,56 +853,48 @@ document.getElementById('modal-confirm').addEventListener('click', async () => {
   pendingPublish = null;
 });
 
-// ─── PUBLISH ──────────────────────────────────────────────────────────────────
+// ── PUBLISH ───────────────────────────────────────────────────────────────────
 async function publishEpisode(rowIndex, ep) {
   const pubBtn = document.getElementById('pub-' + rowIndex);
   if (pubBtn) { pubBtn.disabled = true; pubBtn.classList.add('loading'); pubBtn.textContent = 'Envoi…'; }
 
   try {
-    // 1) Call Make webhook
     const webhookResp = await fetch(WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        titre:       ep.titre,
-        resume:      ep.resume,
-        excerpt:     ep.excerpt,
-        transcript:  ep.transcript,
+        titre: ep.titre, resume: ep.resume,
+        excerpt: ep.excerpt, transcript: ep.transcript,
         dateCreation: ep.dateCreation
       })
     });
-
     if (!webhookResp.ok) throw new Error('Webhook Make — HTTP ' + webhookResp.status);
 
-    // 2) Update col F in Sheet to "Publié"
     const range = encodeURIComponent(`${SHEET_TAB}!F${rowIndex}`);
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
     const sheetResp = await fetch(url, {
       method: 'PUT',
-      headers: {
-        Authorization: 'Bearer ' + accessToken,
-        'Content-Type': 'application/json'
-      },
+      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ values: [['Publié']] })
     });
-
     if (!sheetResp.ok) throw new Error('Google Sheets — HTTP ' + sheetResp.status);
 
-    // 3) Update local state & re-render
     const idx = allEpisodes.findIndex(e => e.rowIndex === rowIndex);
     if (idx !== -1) allEpisodes[idx].etat = 'Publié';
-
     updateStats();
     renderEpisodes();
     showToast('✓ Épisode envoyé à WordPress', 'success');
-
   } catch(e) {
     showToast('Erreur : ' + e.message, 'error');
-    if (pubBtn) { pubBtn.disabled = false; pubBtn.classList.remove('loading'); pubBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publier'; }
+    if (pubBtn) {
+      pubBtn.disabled = false;
+      pubBtn.classList.remove('loading');
+      pubBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publier';
+    }
   }
 }
 
-// ─── TOAST ────────────────────────────────────────────────────────────────────
+// ── TOAST ─────────────────────────────────────────────────────────────────────
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1026,7 +903,6 @@ function showToast(msg, type) {
   t._timer = setTimeout(() => { t.className = ''; }, 3500);
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
 loadGoogleScript();
 </script>
 </body>
