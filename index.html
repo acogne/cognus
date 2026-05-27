@@ -539,17 +539,40 @@ function loadGoogleScript() {
   document.head.appendChild(s);
 }
 
+let tokenExpiry = 0;
+let refreshResolve = null;
+
 function initGoogleAuth() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: (resp) => {
-      if (resp.error) { showToast('Erreur de connexion Google', 'error'); return; }
+      if (resp.error) {
+        if (refreshResolve) { refreshResolve(false); refreshResolve = null; }
+        else { showToast('Erreur de connexion Google', 'error'); }
+        return;
+      }
       accessToken = resp.access_token;
-      fetchUserInfo();
-      showDashboard();
-      loadEpisodes();
+      tokenExpiry = Date.now() + (resp.expires_in ? resp.expires_in * 1000 : 3500 * 1000);
+      if (refreshResolve) {
+        // Silent refresh — resolve promise and continue
+        refreshResolve(true); refreshResolve = null;
+      } else {
+        // Initial login
+        fetchUserInfo();
+        showDashboard();
+        loadEpisodes();
+      }
     }
+  });
+}
+
+// Call before any write operation — refreshes token silently if < 2 min left
+function ensureFreshToken() {
+  if (accessToken && Date.now() < tokenExpiry - 120000) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    refreshResolve = resolve;
+    tokenClient.requestAccessToken({ prompt: '' }); // '' = no popup if session active
   });
 }
 
@@ -773,6 +796,7 @@ async function saveField(id, fieldKey, rowIndex) {
   saveBtn.textContent = '…';
 
   try {
+    await ensureFreshToken();
     const colLetter = String.fromCharCode(64 + COL_MAP[fieldKey]); // A=1→A, B=2→B…
     const range = encodeURIComponent(`${SHEET_TAB}!${colLetter}${rowIndex}`);
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
@@ -859,6 +883,7 @@ async function publishEpisode(rowIndex, ep) {
   if (pubBtn) { pubBtn.disabled = true; pubBtn.classList.add('loading'); pubBtn.textContent = 'Envoi…'; }
 
   try {
+    await ensureFreshToken();
     const webhookResp = await fetch(WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
