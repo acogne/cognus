@@ -258,7 +258,9 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  .episode-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .episode-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+  .episode-btns    { display: flex; align-items: center; gap: 8px; }
+  .last-modified   { font-size: 0.72rem; color: var(--gray-400); white-space: nowrap; }
 
   .btn-toggle {
     width: 32px; height: 32px;
@@ -284,6 +286,19 @@
   .btn-publish:hover { background: var(--red-dark); }
   .btn-publish:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
   .btn-publish.loading { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+
+  .btn-republish {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 18px;
+    background: var(--amber); border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 500;
+    color: var(--white); cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-republish:hover { background: #9A6010; }
+  .btn-republish:disabled, .btn-republish.loading { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
 
   .episode-body {
     display: none;
@@ -527,12 +542,21 @@ const SHEET_TAB = CONFIG.SHEET_TAB;
 const WEBHOOK   = CONFIG.WEBHOOK;
 const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
-// col index in sheet (1-based for API): A=titre, B=resume, C=excerpt, D=transcript, E=date, F=etat
+// col index in sheet (1-based for API): A=titre, B=resume, C=excerpt, D=transcript, E=date, F=etat, G=dateModif, H=datePub
 const COL_MAP = { titre: 1, resume: 2, excerpt: 3, transcript: 4 };
 
 let tokenClient, accessToken = null;
 let allEpisodes = [], currentFilter = 'all';
 let pendingPublish = null;
+
+function nowISO() { return new Date().toISOString().substring(0, 16); }
+function formatModDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const p = n => String(n).padStart(2, '0');
+  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} à ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
 // ── GOOGLE AUTH ──────────────────────────────────────────────────────────────
 function loadGoogleScript() {
@@ -612,21 +636,30 @@ async function loadEpisodes() {
   const btn = document.getElementById('btn-refresh');
   btn.classList.add('loading');
   try {
-    const range = encodeURIComponent(`${SHEET_TAB}!A2:F1000`);
+    const range = encodeURIComponent(`${SHEET_TAB}!A2:H1000`);
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
     const data = await r.json();
     if (data.error) throw new Error(data.error.message);
     const rows = data.values || [];
-    allEpisodes = rows.map((row, i) => ({
-      rowIndex: i + 2,
-      titre:       row[0] || '',
-      resume:      row[1] || '',
-      excerpt:     row[2] || '',
-      transcript:  row[3] || '',
-      dateCreation: row[4] || '',
-      etat:        row[5] || 'A vérifier'
-    }));
+    allEpisodes = rows.map((row, i) => {
+      const etat             = row[5] || 'A vérifier';
+      const isPublished      = etat === 'Publié' || etat === 'Publier';
+      const dateModification = row[6] || '';
+      const datePublication  = row[7] || '';
+      return {
+        rowIndex: i + 2,
+        titre:       row[0] || '',
+        resume:      row[1] || '',
+        excerpt:     row[2] || '',
+        transcript:  row[3] || '',
+        dateCreation: row[4] || '',
+        etat,
+        dateModification,
+        datePublication,
+        modifiedAfterPublish: isPublished && !!dateModification && !!datePublication && dateModification > datePublication
+      };
+    });
     allEpisodes.sort((a, b) => parseDate(b.dateCreation) - parseDate(a.dateCreation));
     updateStats();
     renderEpisodes();
@@ -732,15 +765,24 @@ function renderEpisodes() {
           ${ep.excerpt ? `<div class="episode-excerpt">${escHtml(shortExcerpt)}</div>` : ''}
         </div>
         <div class="episode-actions">
-          ${!isPublished ? `
-            <button class="btn-publish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex})" id="pub-${ep.rowIndex}">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Publier
+          <span class="last-modified" id="lastmod-${ep.rowIndex}">${ep.dateModification ? 'Modifié le ' + formatModDate(ep.dateModification) : ''}</span>
+          <div class="episode-btns" id="btns-${ep.rowIndex}">
+            ${!isPublished ? `
+              <button class="btn-publish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex})" id="pub-${ep.rowIndex}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Publier
+              </button>
+            ` : ''}
+            ${isPublished && ep.modifiedAfterPublish ? `
+              <button class="btn-republish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex}, true)" id="repub-${ep.rowIndex}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+                Republier
+              </button>
+            ` : ''}
+            <button class="btn-toggle" id="toggle-${ep.rowIndex}" aria-label="Développer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-          ` : ''}
-          <button class="btn-toggle" id="toggle-${ep.rowIndex}" aria-label="Développer">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
+          </div>
         </div>
       </div>
       <div class="episode-body" id="body-${ep.rowIndex}">
@@ -800,18 +842,25 @@ async function saveField(id, fieldKey, rowIndex) {
 
   try {
     await ensureFreshToken();
-    const colLetter = String.fromCharCode(64 + COL_MAP[fieldKey]); // A=1→A, B=2→B…
-    const range = encodeURIComponent(`${SHEET_TAB}!${colLetter}${rowIndex}`);
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
-    const r = await fetch(url, {
-      method: 'PUT',
-      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ values: [[newVal]] })
-    });
+    const colLetter  = String.fromCharCode(64 + COL_MAP[fieldKey]); // A=1→A, B=2→B…
+    const range  = encodeURIComponent(`${SHEET_TAB}!${colLetter}${rowIndex}`);
+    const rangeG = encodeURIComponent(`${SHEET_TAB}!G${rowIndex}`);
+    const url  = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
+    const urlG = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeG}?valueInputOption=RAW`;
+    const now = nowISO();
+    const authHeaders = { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' };
+
+    const [r] = await Promise.all([
+      fetch(url,  { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[newVal]] }) }),
+      fetch(urlG, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]    }) })
+    ]);
     if (!r.ok) throw new Error('HTTP ' + r.status);
 
     // Update local state
     ep[fieldKey] = newVal;
+    ep.dateModification = now;
+    const wasPublished = ep.etat === 'Publié' || ep.etat === 'Publier';
+    if (wasPublished) ep.modifiedAfterPublish = true;
 
     // Update view display
     cancelEdit(id);
@@ -828,6 +877,24 @@ async function saveField(id, fieldKey, rowIndex) {
       if (card) {
         const titleEl = card.querySelector('.episode-title');
         if (titleEl) titleEl.textContent = newVal || '';
+      }
+    }
+
+    // Update last-modified label in the card header
+    const modSpan = document.getElementById('lastmod-' + rowIndex);
+    if (modSpan) modSpan.textContent = 'Modifié le ' + formatModDate(now);
+
+    // If episode is published and was just modified, inject Republier button
+    if (wasPublished && ep.modifiedAfterPublish && !document.getElementById('repub-' + rowIndex)) {
+      const btnsDiv = document.getElementById('btns-' + rowIndex);
+      const toggle  = document.getElementById('toggle-' + rowIndex);
+      if (btnsDiv && toggle) {
+        const repubBtn = document.createElement('button');
+        repubBtn.className = 'btn-republish';
+        repubBtn.id = 'repub-' + rowIndex;
+        repubBtn.onclick = (e) => { e.stopPropagation(); openConfirm(rowIndex, true); };
+        repubBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg> Republier`;
+        btnsDiv.insertBefore(repubBtn, toggle);
       }
     }
 
@@ -853,11 +920,13 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 document.getElementById('btn-refresh').addEventListener('click', loadEpisodes);
 
 // ── CONFIRM MODAL ─────────────────────────────────────────────────────────────
-function openConfirm(rowIndex) {
+function openConfirm(rowIndex, isRepublish = false) {
   const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
   if (!ep) return;
-  pendingPublish = { rowIndex, episode: ep };
+  pendingPublish = { rowIndex, episode: ep, isRepublish };
   document.getElementById('modal-title').textContent = '"' + (ep.titre || 'Sans titre') + '"';
+  document.querySelector('#modal-overlay .modal h3').textContent = isRepublish ? 'Republier cet épisode ?' : 'Publier cet épisode ?';
+  document.getElementById('modal-confirm').textContent = isRepublish ? 'Republier' : 'Publier';
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -876,13 +945,13 @@ document.getElementById('modal-overlay').addEventListener('click', (e) => {
 document.getElementById('modal-confirm').addEventListener('click', async () => {
   document.getElementById('modal-overlay').classList.remove('open');
   if (!pendingPublish) return;
-  await publishEpisode(pendingPublish.rowIndex, pendingPublish.episode);
+  await publishEpisode(pendingPublish.rowIndex, pendingPublish.episode, pendingPublish.isRepublish);
   pendingPublish = null;
 });
 
 // ── PUBLISH ───────────────────────────────────────────────────────────────────
-async function publishEpisode(rowIndex, ep) {
-  const pubBtn = document.getElementById('pub-' + rowIndex);
+async function publishEpisode(rowIndex, ep, isRepublish = false) {
+  const pubBtn = document.getElementById((isRepublish ? 'repub-' : 'pub-') + rowIndex);
   if (pubBtn) { pubBtn.disabled = true; pubBtn.classList.add('loading'); pubBtn.textContent = 'Envoi…'; }
 
   try {
@@ -898,26 +967,36 @@ async function publishEpisode(rowIndex, ep) {
     });
     if (!webhookResp.ok) throw new Error('Webhook Make — HTTP ' + webhookResp.status);
 
-    const range = encodeURIComponent(`${SHEET_TAB}!F${rowIndex}`);
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
-    const sheetResp = await fetch(url, {
-      method: 'PUT',
-      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ values: [['Publié']] })
-    });
-    if (!sheetResp.ok) throw new Error('Google Sheets — HTTP ' + sheetResp.status);
+    const now = nowISO();
+    const authHeaders = { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' };
+    const rangeF = encodeURIComponent(`${SHEET_TAB}!F${rowIndex}`);
+    const rangeH = encodeURIComponent(`${SHEET_TAB}!H${rowIndex}`);
+    const urlF = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeF}?valueInputOption=RAW`;
+    const urlH = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeH}?valueInputOption=RAW`;
+
+    const [sheetRespF] = await Promise.all([
+      fetch(urlF, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [['Publié']] }) }),
+      fetch(urlH, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]     }) })
+    ]);
+    if (!sheetRespF.ok) throw new Error('Google Sheets — HTTP ' + sheetRespF.status);
 
     const idx = allEpisodes.findIndex(e => e.rowIndex === rowIndex);
-    if (idx !== -1) allEpisodes[idx].etat = 'Publié';
+    if (idx !== -1) {
+      allEpisodes[idx].etat = 'Publié';
+      allEpisodes[idx].datePublication = now;
+      allEpisodes[idx].modifiedAfterPublish = false;
+    }
     updateStats();
     renderEpisodes();
-    showToast('✓ Épisode envoyé à WordPress', 'success');
+    showToast(isRepublish ? '✓ Épisode republié sur WordPress' : '✓ Épisode envoyé à WordPress', 'success');
   } catch(e) {
     showToast('Erreur : ' + e.message, 'error');
     if (pubBtn) {
       pubBtn.disabled = false;
       pubBtn.classList.remove('loading');
-      pubBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publier';
+      pubBtn.innerHTML = isRepublish
+        ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg> Republier`
+        : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publier`;
     }
   }
 }
