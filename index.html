@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONE FM — Dashboard Podcasts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E8001E;
+    --red-dark: #B8001A;
+    --red-pale: #FFF0F2;
+    --black: #0A0A0A;
+    --white: #FFFFFF;
+    --gray-50: #F7F7F5;
+    --gray-100: #EDEDEA;
+    --gray-200: #D8D8D4;
+    --gray-400: #9A9A95;
+    --gray-700: #3A3A38;
+    --green: #1D9E75;
+    --green-pale: #E1F5EE;
+    --amber: #BA7517;
+    --amber-pale: #FAEEDA;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-50);
+    color: var(--black);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--black);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--white);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-badge {
+    background: var(--red);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #user-info {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    color: var(--gray-400);
+    font-size: 0.85rem;
+  }
+
+  #user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--gray-700);
+  }
+
+  #user-name {
+    color: var(--white);
+    font-size: 0.85rem;
+  }
+
+  #btn-signout {
+    background: none;
+    border: 1px solid var(--gray-700);
+    color: var(--gray-400);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  #btn-signout:hover {
+    border-color: var(--gray-400);
+    color: var(--white);
+  }
+
+  /* LOGIN SCREEN */
+  #login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 60px);
+    padding: 2rem;
+  }
+
+  .login-card {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: 12px;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .login-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--red-pale);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.5rem;
+  }
+
+  .login-card h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: var(--black);
+  }
+
+  .login-card p {
+    color: var(--gray-400);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  #btn-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 20px;
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: var(--shadow);
+  }
+
+  #btn-login:hover {
+    border-color: var(--gray-400);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .google-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* MAIN DASHBOARD */
+  #dashboard {
+    display: none;
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .dashboard-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--black);
+  }
+
+  .dashboard-title span {
+    color: var(--gray-400);
+    font-weight: 400;
+    font-size: 1rem;
+    margin-left: 0.5rem;
+  }
+
+  /* STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .stat-card.red .stat-value { color: var(--red); }
+  .stat-card.green .stat-value { color: var(--green); }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--gray-400); }
+
+  .filter-btn.active {
+    background: var(--black);
+    border-color: var(--black);
+    color: var(--white);
+  }
+
+  /* REFRESH */
+  #btn-refresh {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: var(--shadow);
+  }
+
+  #btn-refresh:hover { border-color: var(--gray-400); }
+  #btn-refresh svg { transition: transform 0.4s; }
+  #btn-refresh.loading svg { animation: spin 0.8s linear infinite; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* EPISODES LIST */
+  #episodes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .episode-card {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.15s;
+  }
+
+  .episode-card:hover { box-shadow: var(--shadow-lg); }
+
+  .episode-card.published {
+    border-left: 3px solid var(--green);
+  }
+
+  .episode-card.pending {
+    border-left: 3px solid var(--amber);
+  }
+
+  .episode-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem;
+    gap: 1rem;
+    cursor: pointer;
+  }
+
+  .episode-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .episode-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .episode-date {
+    font-size: 0.8rem;
+    color: var(--gray-400);
+    font-weight: 500;
+  }
+
+  .status-badge {
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .status-badge.pending {
+    background: var(--amber-pale);
+    color: var(--amber);
+  }
+
+  .status-badge.published {
+    background: var(--green-pale);
+    color: var(--green);
+  }
+
+  .episode-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--black);
+    line-height: 1.4;
+  }
+
+  .episode-excerpt {
+    font-size: 0.85rem;
+    color: var(--gray-400);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .episode-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-toggle {
+    width: 32px;
+    height: 32px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-100);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--gray-400);
+    font-size: 0.85rem;
+  }
+
+  .btn-toggle:hover { background: var(--gray-100); color: var(--gray-700); }
+
+  /* PUBLISH BUTTON */
+  .btn-publish {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    background: var(--red);
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-publish:hover { background: var(--red-dark); }
+  .btn-publish:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+
+  .btn-publish.loading {
+    background: var(--gray-200);
+    color: var(--gray-400);
+    cursor: not-allowed;
+  }
+
+  /* EPISODE BODY (expandable) */
+  .episode-body {
+    display: none;
+    border-top: 1px solid var(--gray-100);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .episode-body.open { display: block; }
+
+  .data-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .data-grid { grid-template-columns: 1fr; }
+  }
+
+  .data-field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--gray-400);
+    margin-bottom: 5px;
+  }
+
+  .data-field p {
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    line-height: 1.55;
+  }
+
+  .data-field.full { grid-column: 1 / -1; }
+
+  .transcript-box {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-100);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    line-height: 1.65;
+    max-height: 280px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  /* EMPTY / LOADING STATES */
+  .state-box {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray-400);
+  }
+
+  .state-box svg {
+    margin: 0 auto 1rem;
+    display: block;
+    opacity: 0.3;
+  }
+
+  .state-box p { font-size: 0.9rem; }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--black);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s;
+    z-index: 200;
+    max-width: 320px;
+    pointer-events: none;
+  }
+
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { background: var(--green); }
+  #toast.error { background: var(--red); }
+
+  /* CONFIRM MODAL */
+  #modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 150;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  #modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal p {
+    color: var(--gray-400);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-title-preview {
+    color: var(--black);
+    font-weight: 500;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel {
+    padding: 9px 18px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-cancel:hover { border-color: var(--gray-400); }
+
+  .btn-confirm {
+    padding: 9px 18px;
+    background: var(--red);
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-confirm:hover { background: var(--red-dark); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span>ONE FM</span>
+    <span class="logo-badge">PODCASTS</span>
+  </div>
+  <div class="header-right">
+    <div id="user-info">
+      <img id="user-avatar" src="" alt="Avatar">
+      <span id="user-name"></span>
+      <button id="btn-signout">Déconnexion</button>
+    </div>
+  </div>
+</header>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🎙️</div>
+    <h2>Dashboard Podcasts</h2>
+    <p>Connecte-toi avec ton compte Google pour accéder à la liste des podcasts à valider.</p>
+    <button id="btn-login">
+      <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continuer avec Google
+    </button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dashboard-header">
+    <div>
+      <div class="dashboard-title">Épisodes <span id="episode-count"></span></div>
+    </div>
+    <button id="btn-refresh">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M1 4v6h6M23 20v-6h-6"/>
+        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+      </svg>
+      Actualiser
+    </button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total</div>
+      <div class="stat-value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">À vérifier</div>
+      <div class="stat-value" id="stat-pending">—</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Publiés</div>
+      <div class="stat-value" id="stat-published">—</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">Tous</button>
+    <button class="filter-btn" data-filter="pending">À vérifier</button>
+    <button class="filter-btn" data-filter="published">Publiés</button>
+  </div>
+
+  <div id="episodes-list">
+    <div class="state-box">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <p>Chargement des épisodes…</p>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div id="modal-overlay">
+  <div class="modal">
+    <h3>Publier cet épisode ?</h3>
+    <p>L'épisode <span class="modal-title-preview" id="modal-title"></span> sera envoyé à WordPress via Make.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-cancel">Annuler</button>
+      <button class="btn-confirm" id="modal-confirm">Publier</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const CLIENT_ID = '351907380300-i306mljg4r3j9vu5876s6kav8gp42et7.apps.googleusercontent.com';
+const SHEET_ID  = '1-WnZLizJaWQqeVq7rO1u-LrTCGR725ejDmxwz3j_z5w';
+const SHEET_TAB = 'Feuille1';          // ← Nom exact de l'onglet (à adapter si besoin)
+const WEBHOOK   = 'https://hook.eu2.make.com/lwvcvjkdha74brmsnei1pq53gnq9sid2';
+const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let tokenClient, accessToken = null;
+let allEpisodes = [], currentFilter = 'all';
+let pendingPublish = null;  // { rowIndex, episode }
+
+// ─── GOOGLE IDENTITY ──────────────────────────────────────────────────────────
+function loadGoogleScript() {
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.onload = initGoogleAuth;
+  document.head.appendChild(s);
+}
+
+function initGoogleAuth() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if (resp.error) { showToast('Erreur de connexion Google', 'error'); return; }
+      accessToken = resp.access_token;
+      fetchUserInfo();
+      showDashboard();
+      loadEpisodes();
+    }
+  });
+}
+
+document.getElementById('btn-login').addEventListener('click', () => {
+  if (!tokenClient) { showToast('Chargement en cours…', ''); return; }
+  tokenClient.requestAccessToken();
+});
+
+document.getElementById('btn-signout').addEventListener('click', () => {
+  if (accessToken) google.accounts.oauth2.revoke(accessToken);
+  accessToken = null;
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('user-info').style.display = 'none';
+});
+
+async function fetchUserInfo() {
+  const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  });
+  const u = await r.json();
+  document.getElementById('user-name').textContent = u.name || u.email;
+  if (u.picture) document.getElementById('user-avatar').src = u.picture;
+  document.getElementById('user-info').style.display = 'flex';
+}
+
+function showDashboard() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+}
+
+// ─── LOAD EPISODES ────────────────────────────────────────────────────────────
+async function loadEpisodes() {
+  const btn = document.getElementById('btn-refresh');
+  btn.classList.add('loading');
+
+  try {
+    const range = encodeURIComponent(`${SHEET_TAB}!A2:F1000`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+    const data = await r.json();
+
+    if (data.error) throw new Error(data.error.message);
+
+    const rows = data.values || [];
+    allEpisodes = rows.map((row, i) => ({
+      rowIndex: i + 2,   // row 1 = header, data starts row 2
+      titre:      row[0] || '',
+      resume:     row[1] || '',
+      excerpt:    row[2] || '',
+      transcript: row[3] || '',
+      dateCreation: row[4] || '',
+      etat:       row[5] || 'A vérifier'
+    }));
+
+    // Sort by dateCreation desc (most recent first)
+    allEpisodes.sort((a, b) => {
+      const da = parseDate(a.dateCreation);
+      const db = parseDate(b.dateCreation);
+      return db - da;
+    });
+
+    updateStats();
+    renderEpisodes();
+  } catch(e) {
+    showToast('Erreur de chargement : ' + e.message, 'error');
+    document.getElementById('episodes-list').innerHTML = `
+      <div class="state-box">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>Impossible de charger les données. Vérifie les permissions du Sheet.</p>
+      </div>`;
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+function parseDate(str) {
+  if (!str) return 0;
+  // Format: "26. mai 2026 06:21" or ISO or various
+  const months = { jan:0, fév:1, feb:1, mar:2, avr:3, apr:3, mai:4, may:4, juin:5, jun:5, juil:6, jul:6, aoû:7, aug:7, sep:8, oct:9, nov:10, déc:11, dec:11 };
+  const m = str.match(/(\d{1,2})\.\s*(\w+)\s+(\d{4})\s+(\d{2}):(\d{2})/);
+  if (m) {
+    const mon = months[m[2].toLowerCase().substring(0,3)] ?? 0;
+    return new Date(+m[3], mon, +m[1], +m[4], +m[5]).getTime();
+  }
+  const d = new Date(str);
+  return isNaN(d) ? 0 : d.getTime();
+}
+
+function formatDate(str) {
+  const t = parseDate(str);
+  if (!t) return str;
+  return new Date(t).toLocaleDateString('fr-CH', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function updateStats() {
+  const total = allEpisodes.length;
+  const pending = allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier').length;
+  const published = allEpisodes.filter(e => e.etat === 'Publié' || e.etat === 'Publier').length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-published').textContent = published;
+  document.getElementById('episode-count').textContent = `(${total})`;
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function renderEpisodes() {
+  const list = document.getElementById('episodes-list');
+  let filtered = allEpisodes;
+
+  if (currentFilter === 'pending')   filtered = allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier');
+  if (currentFilter === 'published') filtered = allEpisodes.filter(e => e.etat === 'Publié' || e.etat === 'Publier');
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="state-box"><p>Aucun épisode dans cette catégorie.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(ep => {
+    const isPublished = ep.etat === 'Publié' || ep.etat === 'Publier';
+    const cardClass = isPublished ? 'published' : 'pending';
+    const badgeClass = isPublished ? 'published' : 'pending';
+    const badgeLabel = isPublished ? 'Publié' : 'À vérifier';
+    const shortExcerpt = ep.excerpt.length > 120 ? ep.excerpt.substring(0,120) + '…' : ep.excerpt;
+
+    return `
+    <div class="episode-card ${cardClass}" data-row="${ep.rowIndex}">
+      <div class="episode-header" onclick="toggleBody(${ep.rowIndex})">
+        <div class="episode-meta">
+          <div class="episode-top">
+            <span class="episode-date">${formatDate(ep.dateCreation)}</span>
+            <span class="status-badge ${badgeClass}">${badgeLabel}</span>
+          </div>
+          <div class="episode-title">${escHtml(ep.titre) || '<em style="color:var(--gray-400)">Sans titre</em>'}</div>
+          ${ep.excerpt ? `<div class="episode-excerpt">${escHtml(shortExcerpt)}</div>` : ''}
+        </div>
+        <div class="episode-actions">
+          ${!isPublished ? `
+            <button class="btn-publish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex})" id="pub-${ep.rowIndex}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Publier
+            </button>
+          ` : ''}
+          <button class="btn-toggle" id="toggle-${ep.rowIndex}" aria-label="Développer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="episode-body" id="body-${ep.rowIndex}">
+        <div class="data-grid">
+          <div class="data-field">
+            <label>Titre</label>
+            <p>${escHtml(ep.titre) || '—'}</p>
+          </div>
+          <div class="data-field">
+            <label>Date création</label>
+            <p>${formatDate(ep.dateCreation) || '—'}</p>
+          </div>
+          <div class="data-field full">
+            <label>Résumé</label>
+            <p>${escHtml(ep.resume) || '—'}</p>
+          </div>
+          <div class="data-field full">
+            <label>Excerpt</label>
+            <p>${escHtml(ep.excerpt) || '—'}</p>
+          </div>
+          <div class="data-field full">
+            <label>Transcript</label>
+            <div class="transcript-box">${escHtml(ep.transcript) || '—'}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleBody(rowIndex) {
+  const body = document.getElementById('body-' + rowIndex);
+  const btn  = document.getElementById('toggle-' + rowIndex);
+  const open = body.classList.toggle('open');
+  btn.querySelector('svg').style.transform = open ? 'rotate(180deg)' : '';
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ─── FILTERS ──────────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderEpisodes();
+  });
+});
+
+document.getElementById('btn-refresh').addEventListener('click', loadEpisodes);
+
+// ─── CONFIRM MODAL ────────────────────────────────────────────────────────────
+function openConfirm(rowIndex) {
+  const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
+  if (!ep) return;
+  pendingPublish = { rowIndex, episode: ep };
+  document.getElementById('modal-title').textContent = '"' + (ep.titre || 'Sans titre') + '"';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+document.getElementById('modal-cancel').addEventListener('click', () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+  pendingPublish = null;
+});
+
+document.getElementById('modal-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+    pendingPublish = null;
+  }
+});
+
+document.getElementById('modal-confirm').addEventListener('click', async () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+  if (!pendingPublish) return;
+  await publishEpisode(pendingPublish.rowIndex, pendingPublish.episode);
+  pendingPublish = null;
+});
+
+// ─── PUBLISH ──────────────────────────────────────────────────────────────────
+async function publishEpisode(rowIndex, ep) {
+  const pubBtn = document.getElementById('pub-' + rowIndex);
+  if (pubBtn) { pubBtn.disabled = true; pubBtn.classList.add('loading'); pubBtn.textContent = 'Envoi…'; }
+
+  try {
+    // 1) Call Make webhook
+    const webhookResp = await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titre:       ep.titre,
+        resume:      ep.resume,
+        excerpt:     ep.excerpt,
+        transcript:  ep.transcript,
+        dateCreation: ep.dateCreation
+      })
+    });
+
+    if (!webhookResp.ok) throw new Error('Webhook Make — HTTP ' + webhookResp.status);
+
+    // 2) Update col F in Sheet to "Publié"
+    const range = encodeURIComponent(`${SHEET_TAB}!F${rowIndex}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
+    const sheetResp = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ values: [['Publié']] })
+    });
+
+    if (!sheetResp.ok) throw new Error('Google Sheets — HTTP ' + sheetResp.status);
+
+    // 3) Update local state & re-render
+    const idx = allEpisodes.findIndex(e => e.rowIndex === rowIndex);
+    if (idx !== -1) allEpisodes[idx].etat = 'Publié';
+
+    updateStats();
+    renderEpisodes();
+    showToast('✓ Épisode envoyé à WordPress', 'success');
+
+  } catch(e) {
+    showToast('Erreur : ' + e.message, 'error');
+    if (pubBtn) { pubBtn.disabled = false; pubBtn.classList.remove('loading'); pubBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publier'; }
+  }
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + (type || '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadGoogleScript();
+</script>
+</body>
+</html>
