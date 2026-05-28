@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ONE FM — Dashboard Podcasts</title>
+<title>Cognus — Dashboard Podcasts</title>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="Picto Cognus.png">
+<link rel="apple-touch-icon" href="Picto Cognus.png">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#E8001E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cognus">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -52,23 +65,19 @@
   .logo {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     color: var(--white);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 10px;
   }
 
-  .logo-badge {
-    background: var(--red);
-    color: white;
-    font-size: 0.65rem;
-    padding: 2px 7px;
-    border-radius: 3px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+  .logo img {
+    height: 30px;
+    width: auto;
+    display: block;
   }
 
   .header-right { display: flex; align-items: center; gap: 1rem; }
@@ -462,8 +471,8 @@
 
 <header>
   <div class="logo">
-    <span>ONE FM</span>
-    <span class="logo-badge">PODCASTS</span>
+    <img src="Picto Cognus.png" alt="Cognus">
+    <span>Cognus</span>
   </div>
   <div class="header-right">
     <div id="user-info">
@@ -1159,8 +1168,13 @@ function showToast(msg, type) {
   t._timer = setTimeout(() => { t.className = ''; }, 3500);
 }
 
-tryRestoreSession(); // Restauration immédiate depuis localStorage si token valide
-loadGoogleScript();  // Charge GSI pour les futurs refreshs silencieux
+tryRestoreSession();
+loadGoogleScript();
+
+// ── SERVICE WORKER (PWA) ──────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
