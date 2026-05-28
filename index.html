@@ -968,12 +968,33 @@ function startEdit(id, fieldKey, rowIndex) {
     inp.value = ep[fieldKey];
     inp.focus();
   }
+  _disablePubBtn(rowIndex);
 }
 
 function cancelEdit(id) {
-  document.getElementById('view-' + id).classList.remove('hidden');
   document.getElementById('edit-' + id).classList.remove('active');
+  document.getElementById('view-' + id).classList.remove('hidden');
   rteLinkClose(id);
+  const rowIndex = parseInt(id.split('-')[1]);
+  _restorePubBtn(rowIndex);
+}
+
+// Désactive le bouton Publier/Republier d'une carte pendant une édition
+function _disablePubBtn(rowIndex) {
+  const pub   = document.getElementById('pub-'   + rowIndex);
+  const repub = document.getElementById('repub-' + rowIndex);
+  if (pub)   { pub.disabled   = true; pub.title   = 'Enregistre ou annule la modification avant de publier'; }
+  if (repub) { repub.disabled = true; repub.title = 'Enregistre ou annule la modification avant de publier'; }
+}
+
+// Réactive le bouton Publier/Republier si aucun autre champ n'est encore en édition
+function _restorePubBtn(rowIndex) {
+  const card = document.querySelector(`.episode-card[data-row="${rowIndex}"]`);
+  if (card && card.querySelector('.field-edit.active')) return; // un autre champ encore ouvert
+  const pub   = document.getElementById('pub-'   + rowIndex);
+  const repub = document.getElementById('repub-' + rowIndex);
+  if (pub)   { pub.disabled   = false; pub.title   = ''; }
+  if (repub) { repub.disabled = false; repub.title = ''; }
 }
 
 async function saveField(id, fieldKey, rowIndex) {
@@ -1273,6 +1294,8 @@ function stopBackgroundRefresh() {
 
 async function backgroundRefresh() {
   if (!accessToken || pollingTimer) return;
+  // Ne pas rafraîchir si l'utilisateur est en train d'éditer un champ
+  if (document.querySelector('.field-edit.active')) return;
   try {
     const prevPendingIds = new Set(
       allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier').map(e => e.rowIndex)
