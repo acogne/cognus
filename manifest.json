@@ -1,0 +1,25 @@
+{
+  "name": "Cognus — Dashboard Podcasts",
+  "short_name": "Cognus",
+  "description": "Dashboard de validation et publication des podcasts",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0A0A0A",
+  "theme_color": "#E8001E",
+  "icons": [
+    {
+      "src": "Picto%20Cognus.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "Picto%20Cognus.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
