@@ -1148,20 +1148,40 @@ document.getElementById('modal-confirm').addEventListener('click', async () => {
 });
 
 // ── PUBLISH ───────────────────────────────────────────────────────────────────
+
+// Convertit du HTML en texte brut (pour l'envoi au webhook Make.com)
+function stripHtml(html) {
+  if (!html) return '';
+  const d = document.createElement('div');
+  d.innerHTML = html;
+  return (d.textContent || d.innerText || '').trim();
+}
+
 async function publishEpisode(rowIndex, ep, isRepublish = false) {
   const pubBtn = document.getElementById((isRepublish ? 'repub-' : 'pub-') + rowIndex);
   if (pubBtn) { pubBtn.disabled = true; pubBtn.classList.add('loading'); pubBtn.textContent = 'Envoi…'; }
 
   try {
     await ensureFreshToken();
+
+    // Le résumé est stocké en HTML dans la sheet (pour le RTE),
+    // mais on envoie la version texte brut au webhook pour assurer
+    // la compatibilité avec le scénario Make.com existant.
+    const payload = {
+      titre:        ep.titre        || '',
+      resume:       stripHtml(ep.resume),
+      resumeHtml:   ep.resume       || '',   // version HTML disponible pour Make si besoin
+      excerpt:      ep.excerpt      || '',
+      transcript:   ep.transcript   || '',
+      dateCreation: ep.dateCreation || ''
+    };
+
+    console.log('[Cognus] Webhook payload:', payload);
+
     const webhookResp = await fetch(WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        titre: ep.titre, resume: ep.resume,
-        excerpt: ep.excerpt, transcript: ep.transcript,
-        dateCreation: ep.dateCreation
-      })
+      body: JSON.stringify(payload)
     });
     if (!webhookResp.ok) throw new Error('Webhook Make — HTTP ' + webhookResp.status);
 
