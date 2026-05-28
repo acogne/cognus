@@ -261,6 +261,7 @@
   .episode-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
   .episode-btns    { display: flex; align-items: center; gap: 8px; }
   .last-modified   { font-size: 0.72rem; color: var(--gray-400); white-space: nowrap; }
+  .wp-success      { font-size: 0.72rem; color: var(--green); background: var(--green-pale); padding: 2px 9px; border-radius: 20px; white-space: nowrap; font-weight: 500; }
 
   .btn-toggle {
     width: 32px; height: 32px;
@@ -540,7 +541,7 @@ const SHEET_TAB = 'One FM';
 const WEBHOOK   = 'https://hook.eu2.make.com/lwvcvjkdha74brmsnei1pq53gnq9sid2';
 const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
-// col index in sheet (1-based for API): A=titre, B=resume, C=excerpt, D=transcript, E=date, F=etat, G=dateModif, H=datePub
+// col index in sheet: A=titre, B=resume, C=excerpt, D=transcript, E=date, F=etat, G=wpSuccess(Make), H=dateModif, I=datePub
 const COL_MAP = { titre: 1, resume: 2, excerpt: 3, transcript: 4 };
 
 let tokenClient, accessToken = null;
@@ -642,7 +643,7 @@ async function loadEpisodes() {
   const btn = document.getElementById('btn-refresh');
   btn.classList.add('loading');
   try {
-    const range = encodeURIComponent(`${SHEET_TAB}!A2:H1000`);
+    const range = encodeURIComponent(`${SHEET_TAB}!A2:I1000`);
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
     const data = await r.json();
@@ -651,8 +652,9 @@ async function loadEpisodes() {
     allEpisodes = rows.map((row, i) => {
       const etat             = row[5] || 'A vérifier';
       const isPublished      = etat === 'Publié' || etat === 'Publier';
-      const dateModification = row[6] || '';
-      const datePublication  = row[7] || '';
+      const wpSuccess        = row[6] || '';   // G — écrit par Make.com
+      const dateModification = row[7] || '';   // H
+      const datePublication  = row[8] || '';   // I
       return {
         rowIndex: i + 2,
         titre:       row[0] || '',
@@ -661,6 +663,7 @@ async function loadEpisodes() {
         transcript:  row[3] || '',
         dateCreation: row[4] || '',
         etat,
+        wpSuccess,
         dateModification,
         datePublication,
         modifiedAfterPublish: isPublished && !!dateModification && !!datePublication && dateModification > datePublication
@@ -772,6 +775,7 @@ function renderEpisodes() {
         </div>
         <div class="episode-actions">
           <span class="last-modified" id="lastmod-${ep.rowIndex}">Modifié le ${ep.dateModification ? formatModDate(ep.dateModification) : formatModDate()}</span>
+          ${ep.wpSuccess === 'Success' ? `<span class="wp-success" id="wpsuccess-${ep.rowIndex}">✓ WordPress</span>` : `<span id="wpsuccess-${ep.rowIndex}"></span>`}
           <div class="episode-btns" id="btns-${ep.rowIndex}">
             ${!isPublished ? `
               <button class="btn-publish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex})" id="pub-${ep.rowIndex}">
@@ -850,15 +854,15 @@ async function saveField(id, fieldKey, rowIndex) {
     await ensureFreshToken();
     const colLetter  = String.fromCharCode(64 + COL_MAP[fieldKey]); // A=1→A, B=2→B…
     const range  = encodeURIComponent(`${SHEET_TAB}!${colLetter}${rowIndex}`);
-    const rangeG = encodeURIComponent(`${SHEET_TAB}!G${rowIndex}`);
+    const rangeH = encodeURIComponent(`${SHEET_TAB}!H${rowIndex}`);
     const url  = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
-    const urlG = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeG}?valueInputOption=RAW`;
+    const urlH = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeH}?valueInputOption=RAW`;
     const now = nowISO();
     const authHeaders = { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' };
 
     const [r] = await Promise.all([
       fetch(url,  { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[newVal]] }) }),
-      fetch(urlG, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]    }) })
+      fetch(urlH, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]    }) })
     ]);
     if (!r.ok) throw new Error('HTTP ' + r.status);
 
@@ -976,13 +980,16 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
     const now = nowISO();
     const authHeaders = { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' };
     const rangeF = encodeURIComponent(`${SHEET_TAB}!F${rowIndex}`);
-    const rangeH = encodeURIComponent(`${SHEET_TAB}!H${rowIndex}`);
+    const rangeG = encodeURIComponent(`${SHEET_TAB}!G${rowIndex}`);
+    const rangeI = encodeURIComponent(`${SHEET_TAB}!I${rowIndex}`);
     const urlF = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeF}?valueInputOption=RAW`;
-    const urlH = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeH}?valueInputOption=RAW`;
+    const urlG = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeG}?valueInputOption=RAW`;
+    const urlI = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeI}?valueInputOption=RAW`;
 
     const [sheetRespF] = await Promise.all([
       fetch(urlF, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [['Publié']] }) }),
-      fetch(urlH, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]     }) })
+      fetch(urlG, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [['']]      }) }), // remet G à vide — Make écrira "Success" après traitement
+      fetch(urlI, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]     }) })
     ]);
     if (!sheetRespF.ok) throw new Error('Google Sheets — HTTP ' + sheetRespF.status);
 
@@ -991,7 +998,11 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
       allEpisodes[idx].etat = 'Publié';
       allEpisodes[idx].datePublication = now;
       allEpisodes[idx].modifiedAfterPublish = false;
+      allEpisodes[idx].wpSuccess = ''; // Make va réécrire "Success" après traitement
     }
+    // Masque le badge WordPress pendant l'attente de confirmation Make
+    const wpBadge = document.getElementById('wpsuccess-' + rowIndex);
+    if (wpBadge) { wpBadge.className = ''; wpBadge.textContent = ''; }
     updateStats();
     renderEpisodes();
     showToast(isRepublish ? '✓ Épisode republié sur WordPress' : '✓ Épisode envoyé à WordPress', 'success');
