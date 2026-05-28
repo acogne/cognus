@@ -628,7 +628,7 @@ let tokenClient, accessToken = null;
 let allEpisodes = [], currentFilter = 'pending';
 let pendingPublish = null;
 let sessionRestored = false;
-let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0;
+let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0, pollingIsRepublish = false;
 let bgRefreshTimer = null;
 let _refreshPending = false; // re-rendu en attente (fetch fait mais édition en cours)
 
@@ -1210,31 +1210,30 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
 
     const now = nowISO();
     const authHeaders = { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' };
-    const rangeF = encodeURIComponent(`${SHEET_TAB}!F${rowIndex}`);
     const rangeG = encodeURIComponent(`${SHEET_TAB}!G${rowIndex}`);
     const rangeI = encodeURIComponent(`${SHEET_TAB}!I${rowIndex}`);
-    const urlF = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeF}?valueInputOption=RAW`;
     const urlG = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeG}?valueInputOption=RAW`;
     const urlI = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeI}?valueInputOption=RAW`;
 
-    const [sheetRespF] = await Promise.all([
-      fetch(urlF, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [['Publié']] }) }),
-      fetch(urlG, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [['']]      }) }), // remet G à vide — Make écrira "Success" après traitement
-      fetch(urlI, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]     }) })
+    // On efface G (Make.com écrira "Success") et on note la date en I.
+    // La colonne F (état) n'est PAS modifiée ici : elle passera à "Publié"
+    // uniquement quand le polling confirmera la réception WordPress.
+    const [sheetRespG] = await Promise.all([
+      fetch(urlG, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [['']]  }) }),
+      fetch(urlI, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]] }) })
     ]);
-    if (!sheetRespF.ok) throw new Error('Google Sheets — HTTP ' + sheetRespF.status);
+    if (!sheetRespG.ok) throw new Error('Google Sheets — HTTP ' + sheetRespG.status);
 
     const idx = allEpisodes.findIndex(e => e.rowIndex === rowIndex);
     if (idx !== -1) {
-      allEpisodes[idx].etat = 'Publié';
       allEpisodes[idx].datePublication = now;
-      allEpisodes[idx].modifiedAfterPublish = false;
-      allEpisodes[idx].wpSuccess = ''; // Make va réécrire "Success" après traitement
+      allEpisodes[idx].wpSuccess = '';
+      if (isRepublish) allEpisodes[idx].modifiedAfterPublish = false; // cache le bouton Republier
     }
     updateStats();
     renderEpisodes();
     showToast(isRepublish ? 'Republication envoyée — en attente Make…' : 'Publication envoyée — en attente Make…', '');
-    startPolling(rowIndex);
+    startPolling(rowIndex, isRepublish);
   } catch(e) {
     showToast('Erreur : ' + e.message, 'error');
     if (pubBtn) {
@@ -1248,9 +1247,9 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
 }
 
 // ── POLLING MAKE.COM (vérif. colonne G toutes les 5s après publication) ────────
-function startPolling(rowIndex) {
+function startPolling(rowIndex, isRepublish = false) {
   stopPolling();
-  pollingRowIndex = rowIndex; pollingAttempts = 0;
+  pollingRowIndex = rowIndex; pollingAttempts = 0; pollingIsRepublish = isRepublish;
   const badge = document.getElementById('wpsuccess-' + rowIndex);
   if (badge) { badge.className = 'wp-pending'; badge.textContent = '⏳ En cours…'; }
   pollingTimer = setInterval(() => pollForSuccess(rowIndex), 5000);
@@ -1273,9 +1272,27 @@ async function pollForSuccess(rowIndex) {
       stopPolling();
       const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
       if (ep) ep.wpSuccess = 'Success';
-      const badge = document.getElementById('wpsuccess-' + rowIndex);
-      if (badge) { badge.className = 'wp-success'; badge.textContent = '✓ WordPress'; }
-      showToast('✓ WordPress confirmé par Make.com', 'success');
+
+      if (!pollingIsRepublish) {
+        // Première publication confirmée : passer l'épisode en "Publié"
+        if (ep) { ep.etat = 'Publié'; ep.modifiedAfterPublish = false; }
+        // Écrire "Publié" dans la colonne F maintenant que WordPress a confirmé
+        const rangeF = encodeURIComponent(`${SHEET_TAB}!F${rowIndex}`);
+        const urlF = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeF}?valueInputOption=RAW`;
+        fetch(urlF, {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ values: [['Publié']] })
+        }).catch(() => {});
+        updateStats();
+        _doRenderWithOpenCards();
+        showToast('✓ WordPress confirmé — épisode déplacé dans "Publiés"', 'success');
+      } else {
+        // Republication : l'épisode est déjà dans "Publiés", juste mettre à jour le badge
+        const badge = document.getElementById('wpsuccess-' + rowIndex);
+        if (badge) { badge.className = 'wp-success'; badge.textContent = '✓ WordPress'; }
+        showToast('✓ WordPress confirmé par Make.com', 'success');
+      }
     }
   } catch(e) { /* ignore */ }
 }
