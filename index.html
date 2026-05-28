@@ -436,6 +436,14 @@
   .field-edit { display: none; flex-direction: column; gap: 8px; }
   .field-edit.active { display: flex; }
   .field-view.hidden { display: none; }
+  /* Vue de référence visible pendant l'édition (soulignements noms propres conservés) */
+  .field-view.editing {
+    opacity: 0.45;
+    pointer-events: none;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--gray-200);
+  }
 
   .edit-textarea, .edit-input {
     width: 100%;
@@ -985,7 +993,7 @@ function escHtml(str) {
 function startEdit(id, fieldKey, rowIndex) {
   const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
   if (!ep) return;
-  document.getElementById('view-' + id).classList.add('hidden');
+  document.getElementById('view-' + id).classList.add('editing');
   document.getElementById('edit-' + id).classList.add('active');
   const rteEl = document.getElementById('rte-' + id);
   if (rteEl) {
@@ -1001,7 +1009,7 @@ function startEdit(id, fieldKey, rowIndex) {
 
 function cancelEdit(id) {
   document.getElementById('edit-' + id).classList.remove('active');
-  document.getElementById('view-' + id).classList.remove('hidden');
+  document.getElementById('view-' + id).classList.remove('editing');
   rteLinkClose(id);
   const rowIndex = parseInt(id.split('-')[1]);
   _restorePubBtn(rowIndex);
