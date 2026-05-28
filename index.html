@@ -193,6 +193,39 @@
 
   .filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
 
+  .search-bar {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  .search-input {
+    width: 100%;
+    padding: 9px 36px 9px 38px;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--black);
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { outline: none; border-color: var(--gray-400); }
+  .search-input::placeholder { color: var(--gray-400); }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400); pointer-events: none;
+  }
+  .search-clear {
+    position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%);
+    display: none; align-items: center; justify-content: center;
+    background: none; border: none; cursor: pointer;
+    color: var(--gray-400); padding: 4px; border-radius: 4px;
+  }
+  .search-clear.visible { display: flex; }
+  .search-clear:hover { color: var(--black); background: var(--gray-100); }
+
   .filter-btn {
     padding: 6px 14px; border-radius: 20px;
     border: 1px solid var(--gray-200);
@@ -606,6 +639,14 @@
     <button class="filter-btn" data-filter="published">Publiés</button>
   </div>
 
+  <div class="search-bar">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-input" id="search-input" type="search" placeholder="Rechercher dans les épisodes…" autocomplete="off">
+    <button class="search-clear" id="search-clear" aria-label="Effacer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
   <div id="episodes-list">
     <div class="state-box">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -640,7 +681,7 @@ const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets https://www.goog
 const COL_MAP = { titre: 1, resume: 2, excerpt: 3, transcript: 4 };
 
 let tokenClient, accessToken = null;
-let allEpisodes = [], currentFilter = 'pending';
+let allEpisodes = [], currentFilter = 'pending', searchQuery = '';
 let pendingPublish = null;
 let sessionRestored = false;
 let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0, pollingIsRepublish = false;
@@ -915,8 +956,16 @@ function renderEpisodes() {
   if (currentFilter === 'pending')   filtered = allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier');
   if (currentFilter === 'published') filtered = allEpisodes.filter(e => e.etat === 'Publié' || e.etat === 'Publier');
 
+  if (searchQuery) {
+    const words = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    filtered = filtered.filter(ep => {
+      const haystack = [ep.titre, stripHtml(ep.resume), ep.excerpt, ep.transcript].join(' ').toLowerCase();
+      return words.every(w => haystack.includes(w));
+    });
+  }
+
   if (!filtered.length) {
-    list.innerHTML = `<div class="state-box"><p>Aucun épisode dans cette catégorie.</p></div>`;
+    list.innerHTML = `<div class="state-box"><p>${searchQuery ? `Aucun résultat pour « ${escHtml(searchQuery)} »` : 'Aucun épisode dans cette catégorie.'}</p></div>`;
     return;
   }
 
@@ -1175,6 +1224,25 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     currentFilter = btn.dataset.filter;
     renderEpisodes();
   });
+});
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+let _searchTimer = null;
+document.getElementById('search-input').addEventListener('input', e => {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => {
+    searchQuery = e.target.value.trim();
+    document.getElementById('search-clear').classList.toggle('visible', searchQuery.length > 0);
+    renderEpisodes();
+  }, 200);
+});
+document.getElementById('search-clear').addEventListener('click', () => {
+  const inp = document.getElementById('search-input');
+  inp.value = '';
+  searchQuery = '';
+  document.getElementById('search-clear').classList.remove('visible');
+  inp.focus();
+  renderEpisodes();
 });
 
 document.getElementById('btn-refresh').addEventListener('click', loadEpisodes);
