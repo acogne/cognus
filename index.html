@@ -262,6 +262,20 @@
   .episode-btns    { display: flex; align-items: center; gap: 8px; }
   .last-modified   { font-size: 0.72rem; color: var(--gray-400); white-space: nowrap; }
   .wp-success      { font-size: 0.72rem; color: var(--green); background: var(--green-pale); padding: 2px 9px; border-radius: 20px; white-space: nowrap; font-weight: 500; }
+  .wp-pending      { font-size: 0.72rem; color: var(--amber); background: var(--amber-pale); padding: 2px 9px; border-radius: 20px; white-space: nowrap; font-weight: 500; }
+
+  #notif-new {
+    position: fixed; top: 70px; left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: var(--black); color: var(--white);
+    padding: 11px 20px 11px 16px;
+    border-radius: 8px; font-size: 0.9rem; font-weight: 500;
+    opacity: 0; pointer-events: none;
+    transition: all 0.3s; z-index: 200;
+    white-space: nowrap; box-shadow: var(--shadow-lg);
+    border-left: 3px solid var(--red); cursor: pointer;
+  }
+  #notif-new.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
   .btn-toggle {
     width: 32px; height: 32px;
@@ -531,6 +545,7 @@
   </div>
 </div>
 
+<div id="notif-new"></div>
 <div id="toast"></div>
 
 <script>
@@ -547,6 +562,9 @@ const COL_MAP = { titre: 1, resume: 2, excerpt: 3, transcript: 4 };
 let tokenClient, accessToken = null;
 let allEpisodes = [], currentFilter = 'all';
 let pendingPublish = null;
+let sessionRestored = false;
+let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0;
+let bgRefreshTimer = null;
 
 function nowISO() { return new Date().toISOString(); } // UTC explicite avec Z
 function formatModDate(iso) {
@@ -576,6 +594,26 @@ function loadGoogleScript() {
 let tokenExpiry = 0;
 let refreshResolve = null;
 
+function saveTokenToStorage() {
+  try { localStorage.setItem('gsi_tok', accessToken); localStorage.setItem('gsi_exp', String(tokenExpiry)); } catch(e) {}
+}
+function clearStoredSession() {
+  try { localStorage.removeItem('gsi_tok'); localStorage.removeItem('gsi_exp'); } catch(e) {}
+}
+function tryRestoreSession() {
+  try {
+    const tok = localStorage.getItem('gsi_tok');
+    const exp = parseInt(localStorage.getItem('gsi_exp') || '0');
+    if (tok && Date.now() < exp - 120000) {
+      accessToken = tok; tokenExpiry = exp; sessionRestored = true;
+      fetchUserInfo().then(() => { showDashboard(); loadEpisodes(); startBackgroundRefresh(); })
+        .catch(() => { clearStoredSession(); sessionRestored = false; accessToken = null; });
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
 function initGoogleAuth() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
@@ -583,22 +621,26 @@ function initGoogleAuth() {
     callback: (resp) => {
       if (resp.error) {
         if (refreshResolve) { refreshResolve(false); refreshResolve = null; }
-        else { showToast('Erreur de connexion Google', 'error'); }
+        else if (!sessionRestored) showToast('Erreur de connexion Google', 'error');
         return;
       }
       accessToken = resp.access_token;
       tokenExpiry = Date.now() + (resp.expires_in ? resp.expires_in * 1000 : 3500 * 1000);
+      saveTokenToStorage();
       if (refreshResolve) {
-        // Silent refresh — resolve promise and continue
         refreshResolve(true); refreshResolve = null;
-      } else {
-        // Initial login
-        fetchUserInfo();
-        showDashboard();
-        loadEpisodes();
+      } else if (!sessionRestored) {
+        // Connexion initiale (bouton)
+        fetchUserInfo(); showDashboard(); loadEpisodes(); startBackgroundRefresh();
       }
+      // Si sessionRestored=true : le token vient d'être silencieusement renouvelé, rien à faire
     }
   });
+  // Si le token stocké est expiré, tenter un refresh silencieux (sans popup)
+  const storedExp = parseInt(localStorage.getItem('gsi_exp') || '0');
+  if (!sessionRestored && localStorage.getItem('gsi_tok') && Date.now() >= storedExp - 120000) {
+    tokenClient.requestAccessToken({ prompt: '' });
+  }
 }
 
 // Call before any write operation — refreshes token silently if < 2 min left
@@ -617,7 +659,8 @@ document.getElementById('btn-login').addEventListener('click', () => {
 
 document.getElementById('btn-signout').addEventListener('click', () => {
   if (accessToken) google.accounts.oauth2.revoke(accessToken);
-  accessToken = null;
+  accessToken = null; sessionRestored = false;
+  clearStoredSession(); stopPolling(); stopBackgroundRefresh();
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('user-info').style.display = 'none';
@@ -639,39 +682,37 @@ function showDashboard() {
 }
 
 // ── LOAD ─────────────────────────────────────────────────────────────────────
+function parseEpisodeRow(row, i) {
+  const etat             = row[5] || 'A vérifier';
+  const isPublished      = etat === 'Publié' || etat === 'Publier';
+  const wpSuccess        = row[6] || '';
+  const dateModification = row[7] || '';
+  const datePublication  = row[8] || '';
+  return {
+    rowIndex: i + 2,
+    titre: row[0]||'', resume: row[1]||'', excerpt: row[2]||'',
+    transcript: row[3]||'', dateCreation: row[4]||'',
+    etat, wpSuccess, dateModification, datePublication,
+    modifiedAfterPublish: isPublished && !!dateModification && !!datePublication && dateModification > datePublication
+  };
+}
+
+async function fetchSheetData() {
+  const range = encodeURIComponent(`${SHEET_TAB}!A2:I1000`);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
+  const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+  const data = await r.json();
+  if (data.error) throw new Error(data.error.message);
+  return (data.values || []).map(parseEpisodeRow);
+}
+
 async function loadEpisodes() {
   const btn = document.getElementById('btn-refresh');
   btn.classList.add('loading');
   try {
-    const range = encodeURIComponent(`${SHEET_TAB}!A2:I1000`);
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
-    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
-    const data = await r.json();
-    if (data.error) throw new Error(data.error.message);
-    const rows = data.values || [];
-    allEpisodes = rows.map((row, i) => {
-      const etat             = row[5] || 'A vérifier';
-      const isPublished      = etat === 'Publié' || etat === 'Publier';
-      const wpSuccess        = row[6] || '';   // G — écrit par Make.com
-      const dateModification = row[7] || '';   // H
-      const datePublication  = row[8] || '';   // I
-      return {
-        rowIndex: i + 2,
-        titre:       row[0] || '',
-        resume:      row[1] || '',
-        excerpt:     row[2] || '',
-        transcript:  row[3] || '',
-        dateCreation: row[4] || '',
-        etat,
-        wpSuccess,
-        dateModification,
-        datePublication,
-        modifiedAfterPublish: isPublished && !!dateModification && !!datePublication && dateModification > datePublication
-      };
-    });
+    allEpisodes = await fetchSheetData();
     allEpisodes.sort((a, b) => parseDate(b.dateCreation) - parseDate(a.dateCreation));
-    updateStats();
-    renderEpisodes();
+    updateStats(); renderEpisodes();
   } catch(e) {
     showToast('Erreur de chargement : ' + e.message, 'error');
     document.getElementById('episodes-list').innerHTML = `
@@ -679,9 +720,7 @@ async function loadEpisodes() {
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <p>Impossible de charger les données.</p>
       </div>`;
-  } finally {
-    btn.classList.remove('loading');
-  }
+  } finally { btn.classList.remove('loading'); }
 }
 
 function parseDate(str) {
@@ -1000,12 +1039,10 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
       allEpisodes[idx].modifiedAfterPublish = false;
       allEpisodes[idx].wpSuccess = ''; // Make va réécrire "Success" après traitement
     }
-    // Masque le badge WordPress pendant l'attente de confirmation Make
-    const wpBadge = document.getElementById('wpsuccess-' + rowIndex);
-    if (wpBadge) { wpBadge.className = ''; wpBadge.textContent = ''; }
     updateStats();
     renderEpisodes();
-    showToast(isRepublish ? '✓ Épisode republié sur WordPress' : '✓ Épisode envoyé à WordPress', 'success');
+    showToast(isRepublish ? 'Republication envoyée — en attente Make…' : 'Publication envoyée — en attente Make…', '');
+    startPolling(rowIndex);
   } catch(e) {
     showToast('Erreur : ' + e.message, 'error');
     if (pubBtn) {
@@ -1018,6 +1055,101 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
   }
 }
 
+// ── POLLING MAKE.COM (vérif. colonne G toutes les 5s après publication) ────────
+function startPolling(rowIndex) {
+  stopPolling();
+  pollingRowIndex = rowIndex; pollingAttempts = 0;
+  const badge = document.getElementById('wpsuccess-' + rowIndex);
+  if (badge) { badge.className = 'wp-pending'; badge.textContent = '⏳ En cours…'; }
+  pollingTimer = setInterval(() => pollForSuccess(rowIndex), 5000);
+}
+
+async function pollForSuccess(rowIndex) {
+  pollingAttempts++;
+  if (pollingAttempts > 24) { // 2 min max
+    stopPolling();
+    showToast('Make.com n\'a pas répondu dans les délais', 'error');
+    return;
+  }
+  try {
+    const range = encodeURIComponent(`${SHEET_TAB}!G${rowIndex}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+    const data = await r.json();
+    const val = (data.values?.[0]?.[0] || '').trim();
+    if (val === 'Success') {
+      stopPolling();
+      const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
+      if (ep) ep.wpSuccess = 'Success';
+      const badge = document.getElementById('wpsuccess-' + rowIndex);
+      if (badge) { badge.className = 'wp-success'; badge.textContent = '✓ WordPress'; }
+      showToast('✓ WordPress confirmé par Make.com', 'success');
+    }
+  } catch(e) { /* ignore */ }
+}
+
+function stopPolling() {
+  if (pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
+  if (pollingRowIndex) {
+    const badge = document.getElementById('wpsuccess-' + pollingRowIndex);
+    if (badge && badge.className === 'wp-pending') { badge.className = ''; badge.textContent = ''; }
+    pollingRowIndex = null;
+  }
+}
+
+// ── BACKGROUND REFRESH (toutes les 60s) ───────────────────────────────────────
+function startBackgroundRefresh() {
+  stopBackgroundRefresh();
+  bgRefreshTimer = setInterval(backgroundRefresh, 60000);
+}
+function stopBackgroundRefresh() {
+  if (bgRefreshTimer) { clearInterval(bgRefreshTimer); bgRefreshTimer = null; }
+}
+
+async function backgroundRefresh() {
+  if (!accessToken || pollingTimer) return;
+  try {
+    const prevPendingIds = new Set(
+      allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier').map(e => e.rowIndex)
+    );
+    const freshEpisodes = await fetchSheetData();
+    freshEpisodes.sort((a, b) => parseDate(b.dateCreation) - parseDate(a.dateCreation));
+
+    const newPending = freshEpisodes.filter(e =>
+      e.etat !== 'Publié' && e.etat !== 'Publier' && !prevPendingIds.has(e.rowIndex)
+    );
+
+    // Sauvegarder les cartes ouvertes avant re-rendu
+    const openCards = new Set(
+      [...document.querySelectorAll('.episode-body.open')].map(el => el.id.replace('body-', ''))
+    );
+
+    allEpisodes = freshEpisodes;
+    updateStats(); renderEpisodes();
+
+    // Restaurer les cartes ouvertes
+    openCards.forEach(ri => {
+      const body = document.getElementById('body-' + ri);
+      const btn  = document.getElementById('toggle-' + ri);
+      if (body) { body.classList.add('open'); if (btn) btn.querySelector('svg').style.transform = 'rotate(180deg)'; }
+    });
+
+    if (newPending.length > 0) showNewPodcastNotification(newPending.length);
+  } catch(e) { /* ignore */ }
+}
+
+function showNewPodcastNotification(count) {
+  const n = document.getElementById('notif-new');
+  n.textContent = `🎙️ ${count} nouveau${count > 1 ? 'x' : ''} podcast${count > 1 ? 's' : ''} à vérifier — cliquer pour filtrer`;
+  n.classList.add('show');
+  clearTimeout(n._timer);
+  n._timer = setTimeout(() => n.classList.remove('show'), 20000);
+  n.onclick = () => {
+    n.classList.remove('show');
+    document.querySelector('.filter-btn[data-filter="pending"]').click();
+  };
+}
+
 // ── TOAST ─────────────────────────────────────────────────────────────────────
 function showToast(msg, type) {
   const t = document.getElementById('toast');
@@ -1027,7 +1159,8 @@ function showToast(msg, type) {
   t._timer = setTimeout(() => { t.className = ''; }, 3500);
 }
 
-loadGoogleScript();
+tryRestoreSession(); // Restauration immédiate depuis localStorage si token valide
+loadGoogleScript();  // Charge GSI pour les futurs refreshs silencieux
 </script>
 </body>
 </html>
