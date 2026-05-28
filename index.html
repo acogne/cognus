@@ -354,6 +354,13 @@
   .rte-preview strong, .rte-preview b { font-weight: 600; }
   .rte-preview em, .rte-preview i { font-style: italic; }
 
+  .proper-noun {
+    text-decoration: underline;
+    text-decoration-color: #F5C518;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+  }
+
   .rte-wrap { display: flex; flex-direction: column; }
   .rte-toolbar {
     display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
@@ -817,6 +824,26 @@ function updateStats() {
   document.getElementById('episode-count').textContent = `(${total})`;
 }
 
+// ── NOMS PROPRES ─────────────────────────────────────────────────────────────
+
+// Souligne les mots ≥3 car. commençant par une majuscule qui ne sont pas
+// en début de phrase (après . ! ? \n ou début de texte).
+function markProperNouns(text) {
+  if (!text) return text;
+  return text.replace(
+    /(?<=[^.!?\n])\s+([A-ZÀÂÄÉÈÊËÎÏÔÙÛÜÇŒÆ][A-Za-zÀ-ÿ'-]{2,})/g,
+    (match, word) => match.slice(0, -word.length) + `<span class="proper-noun">${word}</span>`
+  );
+}
+
+// Version pour contenu HTML : n'applique le marquage qu'aux nœuds texte
+function markProperNounsHtml(html) {
+  if (!html) return html;
+  return html.replace(/(<[^>]+>)|([^<]+)/g, (_, tag, text) =>
+    tag ? tag : markProperNouns(text)
+  );
+}
+
 // ── RENDER ───────────────────────────────────────────────────────────────────
 const PENCIL_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
@@ -851,9 +878,9 @@ function editableField(rowIndex, fieldKey, label, value, isTextarea, tall, rich 
   }
 
   let displayContent;
-  if (rich)                                       displayContent = `<div class="rte-preview">${value || '—'}</div>`;
-  else if (isTextarea && fieldKey==='transcript') displayContent = `<div class="transcript-box">${escHtml(value) || '—'}</div>`;
-  else                                            displayContent = `<p>${escHtml(value) || '—'}</p>`;
+  if (rich)                                       displayContent = `<div class="rte-preview">${markProperNounsHtml(value) || '—'}</div>`;
+  else if (isTextarea && fieldKey==='transcript') displayContent = `<div class="transcript-box">${markProperNouns(escHtml(value)) || '—'}</div>`;
+  else                                            displayContent = `<p>${markProperNouns(escHtml(value)) || '—'}</p>`;
 
   return `
     <div class="data-field${(isTextarea || rich) ? ' full' : ''}" id="df-${id}">
@@ -900,7 +927,7 @@ function renderEpisodes() {
             <span class="episode-date">${formatDate(ep.dateCreation)}</span>
             <span class="status-badge ${badgeClass}">${badgeLabel}</span>
           </div>
-          <div class="episode-title">${escHtml(ep.titre) || '<em style="color:var(--gray-400)">Sans titre</em>'}</div>
+          <div class="episode-title">${markProperNouns(escHtml(ep.titre)) || '<em style="color:var(--gray-400)">Sans titre</em>'}</div>
           ${ep.excerpt ? `<div class="episode-excerpt">${escHtml(shortExcerpt)}</div>` : ''}
         </div>
         <div class="episode-actions">
@@ -1038,11 +1065,11 @@ async function saveField(id, fieldKey, rowIndex) {
     cancelEdit(id);
     const viewEl = document.getElementById('view-' + id);
     if (fieldKey === 'resume') {
-      viewEl.innerHTML = `<div class="rte-preview">${newVal || '—'}</div>`;
+      viewEl.innerHTML = `<div class="rte-preview">${markProperNounsHtml(newVal) || '—'}</div>`;
     } else if (fieldKey === 'transcript') {
-      viewEl.innerHTML = `<div class="transcript-box">${escHtml(newVal) || '—'}</div>`;
+      viewEl.innerHTML = `<div class="transcript-box">${markProperNouns(escHtml(newVal)) || '—'}</div>`;
     } else {
-      viewEl.innerHTML = `<p>${escHtml(newVal) || '—'}</p>`;
+      viewEl.innerHTML = `<p>${markProperNouns(escHtml(newVal)) || '—'}</p>`;
     }
 
     // If titre changed, also update the card header
@@ -1050,7 +1077,7 @@ async function saveField(id, fieldKey, rowIndex) {
       const card = document.querySelector(`.episode-card[data-row="${rowIndex}"]`);
       if (card) {
         const titleEl = card.querySelector('.episode-title');
-        if (titleEl) titleEl.textContent = newVal || '';
+        if (titleEl) titleEl.innerHTML = markProperNouns(escHtml(newVal)) || '';
       }
     }
 
