@@ -630,6 +630,7 @@ let pendingPublish = null;
 let sessionRestored = false;
 let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0;
 let bgRefreshTimer = null;
+let _refreshPending = false; // re-rendu en attente (fetch fait mais édition en cours)
 
 function nowISO() { return new Date().toISOString(); } // UTC explicite avec Z
 function formatModDate(iso) {
@@ -977,6 +978,11 @@ function cancelEdit(id) {
   rteLinkClose(id);
   const rowIndex = parseInt(id.split('-')[1]);
   _restorePubBtn(rowIndex);
+  // Si un refresh était en attente et qu'il n'y a plus aucune édition ouverte, re-rendre
+  if (_refreshPending && !document.querySelector('.field-edit.active')) {
+    _refreshPending = false;
+    _doRenderWithOpenCards();
+  }
 }
 
 // Désactive le bouton Publier/Republier d'une carte pendant une édition
@@ -1294,8 +1300,6 @@ function stopBackgroundRefresh() {
 
 async function backgroundRefresh() {
   if (!accessToken || pollingTimer) return;
-  // Ne pas rafraîchir si l'utilisateur est en train d'éditer un champ
-  if (document.querySelector('.field-edit.active')) return;
   try {
     const prevPendingIds = new Set(
       allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier').map(e => e.rowIndex)
@@ -1307,23 +1311,35 @@ async function backgroundRefresh() {
       e.etat !== 'Publié' && e.etat !== 'Publier' && !prevPendingIds.has(e.rowIndex)
     );
 
-    // Sauvegarder les cartes ouvertes avant re-rendu
-    const openCards = new Set(
-      [...document.querySelectorAll('.episode-body.open')].map(el => el.id.replace('body-', ''))
-    );
-
+    // Toujours mettre à jour les données et les stats
     allEpisodes = freshEpisodes;
-    updateStats(); renderEpisodes();
+    updateStats();
 
-    // Restaurer les cartes ouvertes
-    openCards.forEach(ri => {
-      const body = document.getElementById('body-' + ri);
-      const btn  = document.getElementById('toggle-' + ri);
-      if (body) { body.classList.add('open'); if (btn) btn.querySelector('svg').style.transform = 'rotate(180deg)'; }
-    });
-
+    // Notifier même si édition en cours
     if (newPending.length > 0) showNewPodcastNotification(newPending.length);
+
+    // Re-rendre seulement si aucun champ n'est en cours d'édition
+    if (document.querySelector('.field-edit.active')) {
+      _refreshPending = true; // différé à la fin de l'édition
+      return;
+    }
+
+    _refreshPending = false;
+    _doRenderWithOpenCards();
   } catch(e) { /* ignore */ }
+}
+
+// Re-rendu des cartes en conservant les cartes dépliées
+function _doRenderWithOpenCards() {
+  const openCards = new Set(
+    [...document.querySelectorAll('.episode-body.open')].map(el => el.id.replace('body-', ''))
+  );
+  renderEpisodes();
+  openCards.forEach(ri => {
+    const body = document.getElementById('body-' + ri);
+    const btn  = document.getElementById('toggle-' + ri);
+    if (body) { body.classList.add('open'); if (btn) btn.querySelector('svg').style.transform = 'rotate(180deg)'; }
+  });
 }
 
 function showNewPodcastNotification(count) {
