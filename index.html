@@ -1164,13 +1164,9 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
   try {
     await ensureFreshToken();
 
-    // Le résumé est stocké en HTML dans la sheet (pour le RTE),
-    // mais on envoie la version texte brut au webhook pour assurer
-    // la compatibilité avec le scénario Make.com existant.
     const payload = {
       titre:        ep.titre        || '',
-      resume:       stripHtml(ep.resume),
-      resumeHtml:   ep.resume       || '',   // version HTML disponible pour Make si besoin
+      resume:       ep.resume       || '',
       excerpt:      ep.excerpt      || '',
       transcript:   ep.transcript   || '',
       dateCreation: ep.dateCreation || ''
