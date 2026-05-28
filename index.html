@@ -348,6 +348,62 @@
   .data-field p { font-size: 0.9rem; color: var(--gray-700); line-height: 1.55; }
   .data-field.full { grid-column: 1 / -1; }
 
+  /* RICH TEXT EDITOR */
+  .rte-preview { font-size: 0.9rem; color: var(--gray-700); line-height: 1.55; }
+  .rte-preview a { color: var(--red); text-decoration: underline; }
+  .rte-preview strong, .rte-preview b { font-weight: 600; }
+  .rte-preview em, .rte-preview i { font-style: italic; }
+
+  .rte-wrap { display: flex; flex-direction: column; }
+  .rte-toolbar {
+    display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
+    padding: 5px 8px; background: var(--gray-50);
+    border: 1px solid var(--gray-200); border-bottom: none;
+    border-radius: 6px 6px 0 0;
+  }
+  .rte-btn {
+    width: 28px; height: 28px; display: inline-flex;
+    align-items: center; justify-content: center;
+    background: none; border: 1px solid transparent; border-radius: 4px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    color: var(--gray-700); cursor: pointer; transition: all 0.12s;
+  }
+  .rte-btn:hover { background: var(--gray-100); border-color: var(--gray-200); }
+  .rte-sep { width: 1px; height: 16px; background: var(--gray-200); margin: 0 3px; flex-shrink: 0; }
+  .rte-link-row {
+    display: none; align-items: center; gap: 6px;
+    width: 100%; padding-top: 6px; margin-top: 2px;
+    border-top: 1px solid var(--gray-200);
+  }
+  .rte-link-row.open { display: flex; }
+  .rte-link-input {
+    flex: 1; min-width: 0;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    border: 1px solid var(--gray-200); border-radius: 4px;
+    padding: 4px 8px; outline: none;
+  }
+  .rte-link-input:focus { border-color: var(--gray-400); }
+  .rte-link-ok {
+    padding: 4px 10px; background: var(--black); border: none;
+    border-radius: 4px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem; color: var(--white); cursor: pointer; white-space: nowrap;
+  }
+  .rte-link-rm {
+    padding: 4px 10px; background: none; border: 1px solid var(--gray-200);
+    border-radius: 4px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem; color: var(--gray-400); cursor: pointer; white-space: nowrap;
+  }
+  .rte-link-rm:hover { border-color: var(--gray-400); color: var(--gray-700); }
+  .rte-editor {
+    width: 100%; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; color: var(--gray-700); background: var(--white);
+    border: 1px solid var(--gray-200); border-radius: 0 0 6px 6px;
+    padding: 8px 10px; outline: none; line-height: 1.55; min-height: 80px;
+    transition: border-color 0.15s;
+  }
+  .rte-editor:focus { border-color: var(--gray-400); }
+  .rte-editor a { color: var(--red); text-decoration: underline; }
+
   .transcript-box {
     background: var(--gray-50);
     border: 1px solid var(--gray-100);
@@ -763,18 +819,43 @@ function updateStats() {
 // ── RENDER ───────────────────────────────────────────────────────────────────
 const PENCIL_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
-function editableField(rowIndex, fieldKey, label, value, isTextarea, tall) {
+function editableField(rowIndex, fieldKey, label, value, isTextarea, tall, rich = false) {
   const id = `field-${rowIndex}-${fieldKey}`;
-  const inputHtml = isTextarea
-    ? `<textarea class="edit-textarea${tall ? ' tall' : ''}" id="inp-${id}">${escHtml(value)}</textarea>`
-    : `<input class="edit-input" type="text" id="inp-${id}" value="${escHtml(value)}">`;
 
-  const displayContent = isTextarea && fieldKey === 'transcript'
-    ? `<div class="transcript-box">${escHtml(value) || '—'}</div>`
-    : `<p>${escHtml(value) || '—'}</p>`;
+  let inputHtml;
+  if (rich) {
+    inputHtml = `
+      <div class="rte-wrap">
+        <div class="rte-toolbar">
+          <button class="rte-btn" onmousedown="event.preventDefault(); rteCmd('${id}','bold')" title="Gras"><b>B</b></button>
+          <button class="rte-btn" onmousedown="event.preventDefault(); rteCmd('${id}','italic')" title="Italique"><i>I</i></button>
+          <span class="rte-sep"></span>
+          <button class="rte-btn" onmousedown="event.preventDefault(); rteToggleLink('${id}')" title="Lien hypertexte">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </button>
+          <div class="rte-link-row" id="linkrow-${id}">
+            <input class="rte-link-input" id="linkinp-${id}" type="url" placeholder="https://…"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();rteApplyLink('${id}');}if(event.key==='Escape'){rteLinkClose('${id}');}">
+            <button class="rte-link-ok" onmousedown="event.preventDefault(); rteApplyLink('${id}')">OK</button>
+            <button class="rte-link-rm" onmousedown="event.preventDefault(); rteRemoveLink('${id}')">Supprimer lien</button>
+          </div>
+        </div>
+        <div class="rte-editor" id="rte-${id}" contenteditable="true"
+          onkeydown="if(event.key==='Escape')cancelEdit('${id}')"></div>
+      </div>`;
+  } else {
+    inputHtml = isTextarea
+      ? `<textarea class="edit-textarea${tall ? ' tall' : ''}" id="inp-${id}">${escHtml(value)}</textarea>`
+      : `<input class="edit-input" type="text" id="inp-${id}" value="${escHtml(value)}">`;
+  }
+
+  let displayContent;
+  if (rich)                                       displayContent = `<div class="rte-preview">${value || '—'}</div>`;
+  else if (isTextarea && fieldKey==='transcript') displayContent = `<div class="transcript-box">${escHtml(value) || '—'}</div>`;
+  else                                            displayContent = `<p>${escHtml(value) || '—'}</p>`;
 
   return `
-    <div class="data-field${isTextarea ? ' full' : ''}" id="df-${id}">
+    <div class="data-field${(isTextarea || rich) ? ' full' : ''}" id="df-${id}">
       <label>
         ${label}
         <button class="btn-edit-field" onclick="startEdit('${id}','${fieldKey}',${rowIndex})" title="Modifier" aria-label="Modifier ${label}">
@@ -850,7 +931,7 @@ function renderEpisodes() {
             <label>Date création</label>
             <p>${formatDate(ep.dateCreation) || '—'}</p>
           </div>
-          ${editableField(ep.rowIndex, 'resume',     'Résumé',       ep.resume,      true,  false)}
+          ${editableField(ep.rowIndex, 'resume',     'Résumé',       ep.resume,      true,  false, true)}
           ${editableField(ep.rowIndex, 'excerpt',    'Excerpt',      ep.excerpt,     true,  false)}
           ${editableField(ep.rowIndex, 'transcript', 'Transcript',   ep.transcript,  true,  true)}
         </div>
@@ -877,23 +958,29 @@ function startEdit(id, fieldKey, rowIndex) {
   const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
   if (!ep) return;
   document.getElementById('view-' + id).classList.add('hidden');
-  const editEl = document.getElementById('edit-' + id);
-  editEl.classList.add('active');
-  const inp = document.getElementById('inp-' + id);
-  inp.value = ep[fieldKey];
-  inp.focus();
+  document.getElementById('edit-' + id).classList.add('active');
+  const rteEl = document.getElementById('rte-' + id);
+  if (rteEl) {
+    rteEl.innerHTML = ep[fieldKey] || '';
+    rteEl.focus();
+  } else {
+    const inp = document.getElementById('inp-' + id);
+    inp.value = ep[fieldKey];
+    inp.focus();
+  }
 }
 
 function cancelEdit(id) {
   document.getElementById('view-' + id).classList.remove('hidden');
   document.getElementById('edit-' + id).classList.remove('active');
+  rteLinkClose(id);
 }
 
 async function saveField(id, fieldKey, rowIndex) {
   const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
   if (!ep) return;
-  const inp = document.getElementById('inp-' + id);
-  const newVal = inp.value;
+  const rteEl = document.getElementById('rte-' + id);
+  const newVal = rteEl ? rteEl.innerHTML : document.getElementById('inp-' + id).value;
   const saveBtn = document.getElementById('save-' + id);
   saveBtn.disabled = true;
   saveBtn.textContent = '…';
@@ -923,7 +1010,9 @@ async function saveField(id, fieldKey, rowIndex) {
     // Update view display
     cancelEdit(id);
     const viewEl = document.getElementById('view-' + id);
-    if (fieldKey === 'transcript') {
+    if (fieldKey === 'resume') {
+      viewEl.innerHTML = `<div class="rte-preview">${newVal || '—'}</div>`;
+    } else if (fieldKey === 'transcript') {
       viewEl.innerHTML = `<div class="transcript-box">${escHtml(newVal) || '—'}</div>`;
     } else {
       viewEl.innerHTML = `<p>${escHtml(newVal) || '—'}</p>`;
@@ -963,6 +1052,57 @@ async function saveField(id, fieldKey, rowIndex) {
     saveBtn.disabled = false;
     saveBtn.textContent = 'Enregistrer';
   }
+}
+
+// ── RICH TEXT EDITOR ─────────────────────────────────────────────────────────
+let _rteRange = null; // sauvegarde de la sélection avant ouverture du panneau lien
+
+function rteCmd(id, cmd) {
+  document.getElementById('rte-' + id).focus();
+  document.execCommand(cmd, false, null);
+}
+
+function rteToggleLink(id) {
+  const row = document.getElementById('linkrow-' + id);
+  if (row.classList.contains('open')) { rteLinkClose(id); return; }
+
+  // Sauvegarder la sélection courante
+  const sel = window.getSelection();
+  _rteRange = sel.rangeCount > 0 ? sel.getRangeAt(0).cloneRange() : null;
+
+  // Pré-remplir l'URL si le curseur est dans un lien
+  const anchor = sel.anchorNode?.parentElement?.closest('a');
+  const inp = document.getElementById('linkinp-' + id);
+  inp.value = anchor ? anchor.href : 'https://';
+
+  row.classList.add('open');
+  inp.focus();
+  inp.select();
+}
+
+function rteApplyLink(id) {
+  const url = document.getElementById('linkinp-' + id).value.trim();
+  if (!url || url === 'https://') { rteLinkClose(id); return; }
+  const rte = document.getElementById('rte-' + id);
+  rte.focus();
+  if (_rteRange) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(_rteRange); }
+  document.execCommand('createLink', false, url);
+  rte.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+  rteLinkClose(id);
+}
+
+function rteRemoveLink(id) {
+  const rte = document.getElementById('rte-' + id);
+  rte.focus();
+  if (_rteRange) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(_rteRange); }
+  document.execCommand('unlink', false, null);
+  rteLinkClose(id);
+}
+
+function rteLinkClose(id) {
+  _rteRange = null;
+  const row = document.getElementById('linkrow-' + id);
+  if (row) row.classList.remove('open');
 }
 
 // ── FILTERS ───────────────────────────────────────────────────────────────────
