@@ -907,7 +907,7 @@ function renderEpisodes() {
           <span class="last-modified" id="lastmod-${ep.rowIndex}">Modifié le ${ep.dateModification ? formatModDate(ep.dateModification) : formatModDate()}</span>
           ${ep.wpSuccess === 'Success' ? `<span class="wp-success" id="wpsuccess-${ep.rowIndex}">✓ WordPress</span>` : `<span id="wpsuccess-${ep.rowIndex}"></span>`}
           <div class="episode-btns" id="btns-${ep.rowIndex}">
-            ${!isPublished ? `
+            ${!isPublished && pollingRowIndex !== ep.rowIndex ? `
               <button class="btn-publish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex})" id="pub-${ep.rowIndex}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 Publier
