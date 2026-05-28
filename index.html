@@ -1230,6 +1230,10 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
       allEpisodes[idx].wpSuccess = '';
       if (isRepublish) allEpisodes[idx].modifiedAfterPublish = false; // cache le bouton Republier
     }
+    // Positionner pollingRowIndex AVANT renderEpisodes pour que la condition
+    // d'affichage du bouton Publier soit correcte dès le rendu.
+    pollingRowIndex = rowIndex;
+    pollingIsRepublish = isRepublish;
     updateStats();
     renderEpisodes();
     showToast(isRepublish ? 'Republication envoyée — en attente Make…' : 'Publication envoyée — en attente Make…', '');
