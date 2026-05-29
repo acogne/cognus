@@ -454,6 +454,18 @@
   }
 
   /* INLINE EDIT */
+  /* Editing state — applied directly on the content element */
+  .rte-preview[contenteditable="true"],
+  .transcript-box[contenteditable="true"],
+  p[contenteditable="true"] {
+    outline: 2px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 6px 8px;
+    min-height: 1.6em;
+    cursor: text;
+    white-space: pre-wrap;
+  }
+
   .btn-edit-field {
     display: inline-flex; align-items: center; justify-content: center;
     width: 18px; height: 18px;
@@ -899,54 +911,41 @@ const PENCIL_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" 
 function editableField(rowIndex, fieldKey, label, value, isTextarea, tall, rich = false) {
   const id = `field-${rowIndex}-${fieldKey}`;
 
-  let inputHtml;
-  if (rich) {
-    inputHtml = `
-      <div class="rte-wrap">
-        <div class="rte-toolbar">
-          <button class="rte-btn" onmousedown="event.preventDefault(); rteCmd('${id}','bold')" title="Gras"><b>B</b></button>
-          <button class="rte-btn" onmousedown="event.preventDefault(); rteCmd('${id}','italic')" title="Italique"><i>I</i></button>
-          <span class="rte-sep"></span>
-          <button class="rte-btn" onmousedown="event.preventDefault(); rteToggleLink('${id}')" title="Lien hypertexte">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          </button>
-          <div class="rte-link-row" id="linkrow-${id}">
-            <input class="rte-link-input" id="linkinp-${id}" type="url" placeholder="https://…"
-              onkeydown="if(event.key==='Enter'){event.preventDefault();rteApplyLink('${id}');}if(event.key==='Escape'){rteLinkClose('${id}');}">
-            <button class="rte-link-ok" onmousedown="event.preventDefault(); rteApplyLink('${id}')">OK</button>
-            <button class="rte-link-rm" onmousedown="event.preventDefault(); rteRemoveLink('${id}')">Supprimer lien</button>
-          </div>
-        </div>
-        <div class="rte-editor" id="rte-${id}" contenteditable="true"
-          onkeydown="if(event.key==='Escape')cancelEdit('${id}')"></div>
-      </div>`;
-  } else {
-    inputHtml = isTextarea
-      ? `<textarea class="edit-textarea${tall ? ' tall' : ''}" id="inp-${id}">${escHtml(value)}</textarea>`
-      : `<input class="edit-input" type="text" id="inp-${id}" value="${escHtml(value)}">`;
-  }
+  // Toolbar for résumé (hidden until editing)
+  const toolbarHtml = rich ? `
+    <div class="rte-toolbar" id="toolbar-${id}" style="display:none">
+      <button class="rte-btn" onmousedown="event.preventDefault(); rteCmd('${id}','bold')" title="Gras"><b>B</b></button>
+      <button class="rte-btn" onmousedown="event.preventDefault(); rteCmd('${id}','italic')" title="Italique"><i>I</i></button>
+      <span class="rte-sep"></span>
+      <button class="rte-btn" onmousedown="event.preventDefault(); rteToggleLink('${id}')" title="Lien hypertexte">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
+      <div class="rte-link-row" id="linkrow-${id}">
+        <input class="rte-link-input" id="linkinp-${id}" type="url" placeholder="https://…"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();rteApplyLink('${id}');}if(event.key==='Escape'){rteLinkClose('${id}');}">
+        <button class="rte-link-ok" onmousedown="event.preventDefault(); rteApplyLink('${id}')">OK</button>
+        <button class="rte-link-rm" onmousedown="event.preventDefault(); rteRemoveLink('${id}')">Supprimer lien</button>
+      </div>
+    </div>` : '';
 
-  let displayContent;
-  if (rich)                                       displayContent = `<div class="rte-preview">${markProperNounsHtml(value) || '—'}</div>`;
-  else if (isTextarea && fieldKey==='transcript') displayContent = `<div class="transcript-box">${markProperNouns(escHtml(value)) || '—'}</div>`;
-  else                                            displayContent = `<p>${markProperNouns(escHtml(value)) || '—'}</p>`;
+  // Content element (becomes contenteditable in edit mode)
+  let content;
+  if (rich)                                       content = `<div class="rte-preview" id="content-${id}">${markProperNounsHtml(value) || '—'}</div>`;
+  else if (isTextarea && fieldKey==='transcript') content = `<div class="transcript-box" id="content-${id}">${markProperNouns(escHtml(value)) || '—'}</div>`;
+  else                                            content = `<p id="content-${id}">${markProperNouns(escHtml(value)) || '—'}</p>`;
 
   return `
     <div class="data-field${(isTextarea || rich) ? ' full' : ''}" id="df-${id}">
       <label>
         ${label}
-        <button class="btn-edit-field" onclick="startEdit('${id}','${fieldKey}',${rowIndex})" title="Modifier" aria-label="Modifier ${label}">
+        <button class="btn-edit-field" id="pencil-${id}" onclick="startEdit('${id}','${fieldKey}',${rowIndex})" title="Modifier" aria-label="Modifier ${label}">
           ${PENCIL_SVG}
         </button>
+        <button class="btn-cancel-field" id="cancel-${id}" style="display:none" onclick="cancelEdit('${id}')">Annuler</button>
+        <button class="btn-save-field"   id="save-${id}"   style="display:none" onclick="saveField('${id}','${fieldKey}',${rowIndex})">Enregistrer</button>
       </label>
-      <div class="field-view" id="view-${id}">${displayContent}</div>
-      <div class="field-edit" id="edit-${id}">
-        ${inputHtml}
-        <div class="edit-actions">
-          <button class="btn-cancel-field" onclick="cancelEdit('${id}')">Annuler</button>
-          <button class="btn-save-field" id="save-${id}" onclick="saveField('${id}','${fieldKey}',${rowIndex})">Enregistrer</button>
-        </div>
-      </div>
+      ${toolbarHtml}
+      <div class="field-view" id="view-${id}">${content}</div>
     </div>`;
 }
 
@@ -1038,32 +1037,142 @@ function escHtml(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── HELPERS CURSEUR ───────────────────────────────────────────────────────────
+
+// Retourne le nombre de caractères avant le curseur (dans les nœuds texte)
+function saveCaretOffset(container) {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return 0;
+  const range = sel.getRangeAt(0);
+  const pre = range.cloneRange();
+  pre.selectNodeContents(container);
+  pre.setEnd(range.startContainer, range.startOffset);
+  return pre.toString().length;
+}
+
+// Restaure le curseur à l'offset texte donné
+function restoreCaretOffset(container, offset) {
+  const sel = window.getSelection();
+  const range = document.createRange();
+  let chars = 0, found = false;
+  (function walk(node) {
+    if (found) return;
+    if (node.nodeType === 3) {
+      const end = chars + node.length;
+      if (offset <= end) { range.setStart(node, offset - chars); found = true; }
+      chars = end;
+    } else { for (const child of node.childNodes) walk(child); }
+  })(container);
+  if (!found) { range.selectNodeContents(container); range.collapse(false); }
+  else range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+// Retire uniquement les spans de noms propres (conserve le reste du HTML)
+function stripProperNounSpans(html) {
+  if (!html) return html;
+  return html.replace(/<span class="proper-noun">([^<]*)<\/span>/g, '$1');
+}
+
 // ── INLINE EDIT ───────────────────────────────────────────────────────────────
 function startEdit(id, fieldKey, rowIndex) {
   const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
   if (!ep) return;
-  document.getElementById('view-' + id).classList.add('editing');
-  document.getElementById('edit-' + id).classList.add('active');
-  const rteEl = document.getElementById('rte-' + id);
-  if (rteEl) {
-    rteEl.innerHTML = ep[fieldKey] || '';
-    rteEl.focus();
+  const isRich = fieldKey === 'resume';
+  const contentEl = document.getElementById('content-' + id);
+  if (!contentEl) return;
+
+  // Injecter le contenu brut avec soulignage des noms propres
+  if (isRich) {
+    contentEl.innerHTML = markProperNounsHtml(ep[fieldKey] || '');
   } else {
-    const inp = document.getElementById('inp-' + id);
-    inp.value = ep[fieldKey];
-    inp.focus();
+    contentEl.innerHTML = markProperNouns(escHtml(ep[fieldKey] || ''));
   }
+
+  // Rendre éditable
+  contentEl.contentEditable = 'true';
+  contentEl.focus();
+  const r = document.createRange();
+  r.selectNodeContents(contentEl); r.collapse(false);
+  const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+
+  // Empêcher Enter sur le titre (<p> = champ mono-ligne)
+  if (contentEl.tagName === 'P') {
+    contentEl.onkeydown = e => {
+      if (e.key === 'Enter') e.preventDefault();
+      if (e.key === 'Escape') cancelEdit(id);
+    };
+  } else {
+    contentEl.onkeydown = e => { if (e.key === 'Escape') cancelEdit(id); };
+  }
+
+  // Toolbar résumé
+  if (isRich) {
+    const tb = document.getElementById('toolbar-' + id);
+    if (tb) tb.style.display = 'flex';
+  }
+
+  // Boutons : crayon → Annuler + Enregistrer
+  document.getElementById('pencil-' + id).style.display = 'none';
+  document.getElementById('cancel-' + id).style.display = '';
+  document.getElementById('save-'   + id).style.display = '';
+
+  // Re-appliquer le soulignage à chaque frappe (curseur préservé)
+  contentEl._nounHandler = () => {
+    const offset = saveCaretOffset(contentEl);
+    if (isRich) {
+      contentEl.innerHTML = markProperNounsHtml(stripProperNounSpans(contentEl.innerHTML));
+    } else {
+      contentEl.innerHTML = markProperNouns(escHtml(contentEl.innerText));
+    }
+    restoreCaretOffset(contentEl, offset);
+  };
+  contentEl.addEventListener('input', contentEl._nounHandler);
+
   _disablePubBtn(rowIndex);
 }
 
 function cancelEdit(id) {
-  document.getElementById('edit-' + id).classList.remove('active');
-  document.getElementById('view-' + id).classList.remove('editing');
-  rteLinkClose(id);
+  const contentEl = document.getElementById('content-' + id);
+  if (!contentEl) return;
+  const isRich = contentEl.classList.contains('rte-preview');
+
+  // Retirer le listener et l'état éditable
+  if (contentEl._nounHandler) {
+    contentEl.removeEventListener('input', contentEl._nounHandler);
+    contentEl._nounHandler = null;
+  }
+  contentEl.removeAttribute('contenteditable');
+  contentEl.onkeydown = null;
+
+  // Restaurer le contenu depuis ep avec soulignage
   const rowIndex = parseInt(id.split('-')[1]);
+  const fieldKey = id.split('-').slice(2).join('-');
+  const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
+  if (ep) {
+    contentEl.innerHTML = isRich
+      ? (markProperNounsHtml(ep[fieldKey] || '') || '—')
+      : (markProperNouns(escHtml(ep[fieldKey] || '')) || '—');
+  }
+
+  // Cacher toolbar résumé
+  if (isRich) {
+    const tb = document.getElementById('toolbar-' + id);
+    if (tb) tb.style.display = 'none';
+    rteLinkClose(id);
+  }
+
+  // Boutons : Annuler/Enregistrer → crayon
+  const pencil = document.getElementById('pencil-' + id);
+  const cancel = document.getElementById('cancel-' + id);
+  const save   = document.getElementById('save-'   + id);
+  if (pencil) pencil.style.display = '';
+  if (cancel) cancel.style.display = 'none';
+  if (save)   save.style.display   = 'none';
+
   _restorePubBtn(rowIndex);
-  // Si un refresh était en attente et qu'il n'y a plus aucune édition ouverte, re-rendre
-  if (_refreshPending && !document.querySelector('.field-edit.active')) {
+  if (_refreshPending && !document.querySelector('[contenteditable="true"]')) {
     _refreshPending = false;
     _doRenderWithOpenCards();
   }
@@ -1080,7 +1189,7 @@ function _disablePubBtn(rowIndex) {
 // Réactive le bouton Publier/Republier si aucun autre champ n'est encore en édition
 function _restorePubBtn(rowIndex) {
   const card = document.querySelector(`.episode-card[data-row="${rowIndex}"]`);
-  if (card && card.querySelector('.field-edit.active')) return; // un autre champ encore ouvert
+  if (card && card.querySelector('[contenteditable="true"]')) return; // un autre champ encore ouvert
   const pub   = document.getElementById('pub-'   + rowIndex);
   const repub = document.getElementById('repub-' + rowIndex);
   if (pub)   { pub.disabled   = false; pub.title   = ''; }
@@ -1090,8 +1199,13 @@ function _restorePubBtn(rowIndex) {
 async function saveField(id, fieldKey, rowIndex) {
   const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
   if (!ep) return;
-  const rteEl = document.getElementById('rte-' + id);
-  const newVal = rteEl ? rteEl.innerHTML : document.getElementById('inp-' + id).value;
+  const isRich = fieldKey === 'resume';
+  const contentEl = document.getElementById('content-' + id);
+  // Pour résumé : retirer les spans noms propres et conserver le HTML (gras/italique/liens)
+  // Pour texte brut : innerText préserve les sauts de ligne
+  const newVal = isRich
+    ? stripProperNounSpans(contentEl.innerHTML)
+    : contentEl.innerText;
   const saveBtn = document.getElementById('save-' + id);
   saveBtn.disabled = true;
   saveBtn.textContent = '…';
@@ -1118,16 +1232,8 @@ async function saveField(id, fieldKey, rowIndex) {
     const wasPublished = ep.etat === 'Publié' || ep.etat === 'Publier';
     if (wasPublished) ep.modifiedAfterPublish = true;
 
-    // Update view display
+    // cancelEdit lit ep[fieldKey] (déjà mis à jour) et ré-applique le soulignage
     cancelEdit(id);
-    const viewEl = document.getElementById('view-' + id);
-    if (fieldKey === 'resume') {
-      viewEl.innerHTML = `<div class="rte-preview">${markProperNounsHtml(newVal) || '—'}</div>`;
-    } else if (fieldKey === 'transcript') {
-      viewEl.innerHTML = `<div class="transcript-box">${markProperNouns(escHtml(newVal)) || '—'}</div>`;
-    } else {
-      viewEl.innerHTML = `<p>${markProperNouns(escHtml(newVal)) || '—'}</p>`;
-    }
 
     // If titre changed, also update the card header
     if (fieldKey === 'titre') {
@@ -1169,7 +1275,7 @@ async function saveField(id, fieldKey, rowIndex) {
 let _rteRange = null; // sauvegarde de la sélection avant ouverture du panneau lien
 
 function rteCmd(id, cmd) {
-  document.getElementById('rte-' + id).focus();
+  document.getElementById('content-' + id).focus();
   document.execCommand(cmd, false, null);
 }
 
@@ -1194,7 +1300,7 @@ function rteToggleLink(id) {
 function rteApplyLink(id) {
   const url = document.getElementById('linkinp-' + id).value.trim();
   if (!url || url === 'https://') { rteLinkClose(id); return; }
-  const rte = document.getElementById('rte-' + id);
+  const rte = document.getElementById('content-' + id);
   rte.focus();
   if (_rteRange) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(_rteRange); }
   document.execCommand('createLink', false, url);
@@ -1203,7 +1309,7 @@ function rteApplyLink(id) {
 }
 
 function rteRemoveLink(id) {
-  const rte = document.getElementById('rte-' + id);
+  const rte = document.getElementById('content-' + id);
   rte.focus();
   if (_rteRange) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(_rteRange); }
   document.execCommand('unlink', false, null);
@@ -1443,7 +1549,7 @@ async function backgroundRefresh() {
     if (newPending.length > 0) showNewPodcastNotification(newPending.length);
 
     // Re-rendre seulement si aucun champ n'est en cours d'édition
-    if (document.querySelector('.field-edit.active')) {
+    if (document.querySelector('[contenteditable="true"]')) {
       _refreshPending = true; // différé à la fin de l'édition
       return;
     }
