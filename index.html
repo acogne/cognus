@@ -290,6 +290,35 @@
   .status-badge.pending   { background: var(--amber-pale); color: var(--amber); }
   .status-badge.published { background: var(--green-pale);  color: var(--green); }
 
+  /* Badges d'équipe */
+  .team-badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 500;
+    cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
+    border: none; font-family: inherit;
+  }
+  .team-badge:hover { opacity: 0.7; }
+  .team-badge.badge-morning { background: #FFF3E0; color: #C84B00; }
+  .team-badge.badge-midday  { background: #E8F4FD; color: #1157A0; }
+  .team-badge.badge-happy   { background: #F3E5F5; color: #6A1B9A; }
+
+  /* Barre de retour quand un filtre badge est actif */
+  .badge-filter-bar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px; padding: 8px 14px;
+    background: var(--white); border: 1px solid var(--gray-200);
+    border-radius: 10px; box-shadow: var(--shadow);
+    font-size: 0.85rem; color: var(--gray-700);
+  }
+  .badge-filter-back {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: none; border: none; cursor: pointer;
+    color: var(--gray-400); padding: 0; font-size: 0.85rem;
+    font-family: inherit; transition: color 0.15s;
+  }
+  .badge-filter-back:hover { color: var(--black); }
+
   .episode-title {
     font-family: 'Syne', sans-serif;
     font-weight: 600; font-size: 1rem; color: var(--black); line-height: 1.4;
@@ -659,6 +688,15 @@
     </button>
   </div>
 
+  <div class="badge-filter-bar" id="badge-filter-bar" style="display:none">
+    <button class="badge-filter-back" onclick="clearBadgeFilter()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Tous les épisodes
+    </button>
+    <span>·</span>
+    <span id="badge-filter-label"></span>
+  </div>
+
   <div id="episodes-list">
     <div class="state-box">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -698,6 +736,7 @@ let pendingPublish = null;
 let sessionRestored = false;
 let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0, pollingIsRepublish = false;
 let currentUserName = '';
+let currentBadgeFilter = null;
 let bgRefreshTimer = null;
 let _refreshPending = false; // re-rendu en attente (fetch fait mais édition en cours)
 
@@ -888,6 +927,36 @@ function updateStats() {
   document.getElementById('episode-count').textContent = `(${total})`;
 }
 
+// ── BADGES D'ÉQUIPE ───────────────────────────────────────────────────────────
+
+function getTeamBadge(dateCreation) {
+  const t = parseDate(dateCreation);
+  if (!t) return null;
+  const hour = parseInt(
+    new Intl.DateTimeFormat('fr-CH', { timeZone: 'Europe/Zurich', hour: 'numeric', hour12: false })
+      .formatToParts(new Date(t))
+      .find(p => p.type === 'hour')?.value ?? '-1'
+  );
+  if (hour >= 6  && hour < 10) return { label: 'Equipe du Matin', cls: 'badge-morning' };
+  if (hour >= 10 && hour < 13) return { label: '10h/13h',         cls: 'badge-midday'  };
+  if (hour >= 16 && hour < 20) return { label: 'Happy Hour',      cls: 'badge-happy'   };
+  return null;
+}
+
+function filterByBadge(label) {
+  currentBadgeFilter = label;
+  const bar = document.getElementById('badge-filter-bar');
+  document.getElementById('badge-filter-label').textContent = label;
+  bar.style.display = 'flex';
+  renderEpisodes();
+}
+
+function clearBadgeFilter() {
+  currentBadgeFilter = null;
+  document.getElementById('badge-filter-bar').style.display = 'none';
+  renderEpisodes();
+}
+
 // ── NOMS PROPRES ─────────────────────────────────────────────────────────────
 
 // Souligne les mots ≥3 car. commençant par une majuscule qui ne sont pas
@@ -966,6 +1035,13 @@ function renderEpisodes() {
     });
   }
 
+  if (currentBadgeFilter) {
+    filtered = filtered.filter(ep => {
+      const b = getTeamBadge(ep.dateCreation);
+      return b && b.label === currentBadgeFilter;
+    });
+  }
+
   if (!filtered.length) {
     list.innerHTML = `<div class="state-box"><p>${searchQuery ? `Aucun résultat pour « ${escHtml(searchQuery)} »` : 'Aucun épisode dans cette catégorie.'}</p></div>`;
     return;
@@ -984,6 +1060,7 @@ function renderEpisodes() {
         <div class="episode-meta">
           <div class="episode-top">
             <span class="episode-date">${formatDate(ep.dateCreation)}</span>
+            ${(() => { const b = getTeamBadge(ep.dateCreation); return b ? `<button class="team-badge ${b.cls}" onclick="event.stopPropagation(); filterByBadge('${b.label}')" title="Filtrer : ${b.label}">${b.label}</button>` : ''; })()}
             <span class="status-badge ${badgeClass}">${badgeLabel}</span>
           </div>
           <div class="episode-title">${markProperNouns(escHtml(ep.titre)) || '<em style="color:var(--gray-400)">Sans titre</em>'}</div>
