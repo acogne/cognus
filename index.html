@@ -193,10 +193,32 @@
 
   .filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
 
+  .search-row {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 1rem;
+  }
   .search-bar {
     position: relative;
-    margin-bottom: 1rem;
+    flex: 1;
   }
+  .date-filter {
+    display: flex; gap: 4px; align-items: center; flex-shrink: 0;
+  }
+  .date-input {
+    padding: 9px 10px;
+    border: 1px solid var(--gray-200); border-radius: 10px;
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--black);
+    box-shadow: var(--shadow); cursor: pointer; transition: border-color 0.15s;
+  }
+  .date-input:focus { outline: none; border-color: var(--gray-400); }
+  .date-ok {
+    padding: 9px 14px;
+    background: var(--black); border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500;
+    color: var(--white); cursor: pointer; box-shadow: var(--shadow);
+    transition: opacity 0.15s; white-space: nowrap;
+  }
+  .date-ok:hover { opacity: 0.8; }
   .search-input {
     width: 100%;
     padding: 9px 36px 9px 38px;
@@ -680,16 +702,22 @@
     <button class="filter-btn" data-filter="published">Publiés</button>
   </div>
 
-  <div class="search-bar">
-    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input class="search-input" id="search-input" type="search" placeholder="Rechercher dans les épisodes…" autocomplete="off">
-    <button class="search-clear" id="search-clear" aria-label="Effacer">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+  <div class="search-row">
+    <div class="search-bar">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="search-input" type="search" placeholder="Rechercher dans les épisodes…" autocomplete="off">
+      <button class="search-clear" id="search-clear" aria-label="Effacer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="date-filter">
+      <input class="date-input" type="date" id="date-input" title="Filtrer par date de création">
+      <button class="date-ok" id="date-ok">OK</button>
+    </div>
   </div>
 
   <div class="badge-filter-bar" id="badge-filter-bar" style="display:none">
-    <button class="badge-filter-back" onclick="clearBadgeFilter()">
+    <button class="badge-filter-back" onclick="clearSpecialFilters()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       Tous les épisodes
     </button>
@@ -737,6 +765,7 @@ let sessionRestored = false;
 let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0, pollingIsRepublish = false;
 let currentUserName = '';
 let currentBadgeFilter = null;
+let currentDateFilter  = null;
 let bgRefreshTimer = null;
 let _refreshPending = false; // re-rendu en attente (fetch fait mais édition en cours)
 
@@ -943,17 +972,41 @@ function getTeamBadge(dateCreation) {
   return null;
 }
 
+// Met à jour la barre de retour selon les filtres actifs
+function _updateFilterBar() {
+  const parts = [];
+  if (currentBadgeFilter) parts.push(currentBadgeFilter);
+  if (currentDateFilter) {
+    const [y, m, d] = currentDateFilter.split('-');
+    parts.push('Créé le ' + `${d}.${m}.${y}`);
+  }
+  const bar = document.getElementById('badge-filter-bar');
+  if (parts.length) {
+    document.getElementById('badge-filter-label').textContent = parts.join(' · ');
+    bar.style.display = 'flex';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
 function filterByBadge(label) {
   currentBadgeFilter = label;
-  const bar = document.getElementById('badge-filter-bar');
-  document.getElementById('badge-filter-label').textContent = label;
-  bar.style.display = 'flex';
+  _updateFilterBar();
   renderEpisodes();
 }
 
-function clearBadgeFilter() {
+function filterByDate(dateStr) {
+  if (!dateStr) return;
+  currentDateFilter = dateStr;
+  _updateFilterBar();
+  renderEpisodes();
+}
+
+function clearSpecialFilters() {
   currentBadgeFilter = null;
-  document.getElementById('badge-filter-bar').style.display = 'none';
+  currentDateFilter  = null;
+  document.getElementById('date-input').value = '';
+  _updateFilterBar();
   renderEpisodes();
 }
 
@@ -1039,6 +1092,15 @@ function renderEpisodes() {
     filtered = filtered.filter(ep => {
       const b = getTeamBadge(ep.dateCreation);
       return b && b.label === currentBadgeFilter;
+    });
+  }
+
+  if (currentDateFilter) {
+    filtered = filtered.filter(ep => {
+      const t = parseDate(ep.dateCreation);
+      if (!t) return false;
+      // Comparer la date locale Geneva (YYYY-MM-DD) avec la valeur de l'input
+      return new Date(t).toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' }) === currentDateFilter;
     });
   }
 
@@ -1414,6 +1476,16 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     currentFilter = btn.dataset.filter;
     renderEpisodes();
   });
+});
+
+// ── DATE FILTER ───────────────────────────────────────────────────────────────
+document.getElementById('date-ok').addEventListener('click', () => {
+  const val = document.getElementById('date-input').value;
+  if (val) filterByDate(val);
+});
+// Appuyer sur Entrée dans le champ date déclenche aussi le filtre
+document.getElementById('date-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('date-ok').click();
 });
 
 // ── SEARCH ────────────────────────────────────────────────────────────────────
