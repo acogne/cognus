@@ -689,7 +689,7 @@ const SHEET_TAB = 'One FM';
 const WEBHOOK   = 'https://hook.eu2.make.com/lwvcvjkdha74brmsnei1pq53gnq9sid2';
 const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
-// col index in sheet: A=titre, B=resume, C=excerpt, D=transcript, E=date, F=etat, G=wpSuccess(Make), H=dateModif, I=datePub
+// col index in sheet: A=titre, B=resume, C=excerpt, D=transcript, E=date, F=etat, G=wpSuccess(Make), H=dateModif, I=datePub, J=modifiedBy
 const COL_MAP = { titre: 1, resume: 2, excerpt: 3, transcript: 4 };
 
 let tokenClient, accessToken = null;
@@ -697,6 +697,7 @@ let allEpisodes = [], currentFilter = 'pending', searchQuery = '';
 let pendingPublish = null;
 let sessionRestored = false;
 let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0, pollingIsRepublish = false;
+let currentUserName = '';
 let bgRefreshTimer = null;
 let _refreshPending = false; // re-rendu en attente (fetch fait mais édition en cours)
 
@@ -805,7 +806,8 @@ async function fetchUserInfo() {
     headers: { Authorization: 'Bearer ' + accessToken }
   });
   const u = await r.json();
-  document.getElementById('user-name').textContent = u.name || u.email;
+  currentUserName = u.name || [u.given_name, u.family_name].filter(Boolean).join(' ') || u.email || '';
+  document.getElementById('user-name').textContent = currentUserName || u.email;
   if (u.picture) document.getElementById('user-avatar').src = u.picture;
   document.getElementById('user-info').style.display = 'flex';
 }
@@ -822,17 +824,18 @@ function parseEpisodeRow(row, i) {
   const wpSuccess        = row[6] || '';
   const dateModification = row[7] || '';
   const datePublication  = row[8] || '';
+  const modifiedBy       = row[9] || '';
   return {
     rowIndex: i + 2,
     titre: row[0]||'', resume: row[1]||'', excerpt: row[2]||'',
     transcript: row[3]||'', dateCreation: row[4]||'',
-    etat, wpSuccess, dateModification, datePublication,
+    etat, wpSuccess, dateModification, datePublication, modifiedBy,
     modifiedAfterPublish: isPublished && !!dateModification && !!datePublication && dateModification > datePublication
   };
 }
 
 async function fetchSheetData() {
-  const range = encodeURIComponent(`${SHEET_TAB}!A2:I1000`);
+  const range = encodeURIComponent(`${SHEET_TAB}!A2:J1000`);
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
   const data = await r.json();
@@ -987,7 +990,7 @@ function renderEpisodes() {
           ${ep.excerpt ? `<div class="episode-excerpt">${escHtml(shortExcerpt)}</div>` : ''}
         </div>
         <div class="episode-actions">
-          <span class="last-modified" id="lastmod-${ep.rowIndex}">Modifié le ${ep.dateModification ? formatModDate(ep.dateModification) : formatModDate()}</span>
+          <span class="last-modified" id="lastmod-${ep.rowIndex}">Modifié le ${ep.dateModification ? formatModDate(ep.dateModification) : formatModDate()}${ep.modifiedBy ? ' par ' + escHtml(ep.modifiedBy) : ''}</span>
           ${ep.wpSuccess === 'Success' ? `<span class="wp-success" id="wpsuccess-${ep.rowIndex}">✓ WordPress</span>` : `<span id="wpsuccess-${ep.rowIndex}"></span>`}
           <div class="episode-btns" id="btns-${ep.rowIndex}">
             ${!isPublished && pollingRowIndex !== ep.rowIndex ? `
@@ -1215,20 +1218,24 @@ async function saveField(id, fieldKey, rowIndex) {
     const colLetter  = String.fromCharCode(64 + COL_MAP[fieldKey]); // A=1→A, B=2→B…
     const range  = encodeURIComponent(`${SHEET_TAB}!${colLetter}${rowIndex}`);
     const rangeH = encodeURIComponent(`${SHEET_TAB}!H${rowIndex}`);
+    const rangeJ = encodeURIComponent(`${SHEET_TAB}!J${rowIndex}`);
     const url  = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
     const urlH = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeH}?valueInputOption=RAW`;
+    const urlJ = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeJ}?valueInputOption=RAW`;
     const now = nowISO();
     const authHeaders = { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' };
 
     const [r] = await Promise.all([
-      fetch(url,  { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[newVal]] }) }),
-      fetch(urlH, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]    }) })
+      fetch(url,  { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[newVal]]          }) }),
+      fetch(urlH, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]             }) }),
+      fetch(urlJ, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[currentUserName]] }) })
     ]);
     if (!r.ok) throw new Error('HTTP ' + r.status);
 
     // Update local state
     ep[fieldKey] = newVal;
     ep.dateModification = now;
+    ep.modifiedBy = currentUserName;
     const wasPublished = ep.etat === 'Publié' || ep.etat === 'Publier';
     if (wasPublished) ep.modifiedAfterPublish = true;
 
@@ -1246,7 +1253,7 @@ async function saveField(id, fieldKey, rowIndex) {
 
     // Update last-modified label in the card header
     const modSpan = document.getElementById('lastmod-' + rowIndex);
-    if (modSpan) modSpan.textContent = 'Modifié le ' + formatModDate(now);
+    if (modSpan) modSpan.textContent = 'Modifié le ' + formatModDate(now) + (currentUserName ? ' par ' + currentUserName : '');
 
     // If episode is published and was just modified, inject Republier button
     if (wasPublished && ep.modifiedAfterPublish && !document.getElementById('repub-' + rowIndex)) {
