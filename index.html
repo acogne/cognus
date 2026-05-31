@@ -2000,8 +2000,8 @@ async function showHub() {
   document.getElementById('hub-screen').style.display = 'block';
   stopPolling(); stopBackgroundRefresh();
   currentStation = null;
-  document.documentElement.style.removeProperty('--brand');
-  document.documentElement.style.removeProperty('--brand-text');
+  document.documentElement.style.setProperty('--brand', '#0A0A0A');
+  document.documentElement.style.setProperty('--brand-text', '#ffffff');
   const btn = document.getElementById('btn-back-hub');
   if (btn) btn.style.display = 'none';
   const stHdr = document.getElementById('station-header');
