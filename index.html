@@ -1495,7 +1495,7 @@ function renderEpisodes() {
           ${ep.excerpt ? `<div class="episode-excerpt">${escHtml(shortExcerpt)}</div>` : ''}
         </div>
         <div class="episode-actions">
-          <span class="last-modified" id="lastmod-${ep.rowIndex}">${ep.dateModification ? 'Modifié le ' + formatModDate(ep.dateModification) + (ep.modifiedBy ? ' par ' + escHtml(ep.modifiedBy) : '') : ''}</span>
+          <span class="last-modified" id="lastmod-${ep.rowIndex}">${ep.dateModification ? 'Modifié le ' + formatModDate(ep.dateModification) + (ep.modifiedBy ? ' par ' + escHtml(ep.modifiedBy) : '') : ep.publishedBy ? 'Publié par ' + escHtml(ep.publishedBy) : ''}</span>
           ${ep.wpSuccess === 'Success' ? `<span class="wp-success" id="wpsuccess-${ep.rowIndex}">✓ WordPress</span>` : `<span id="wpsuccess-${ep.rowIndex}"></span>`}
           <div class="episode-btns" id="btns-${ep.rowIndex}">
             ${!isPublished && pollingRowIndex === null ? `
