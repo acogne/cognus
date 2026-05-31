@@ -844,7 +844,7 @@
   <div class="hub-page">
     <section class="hub-greet">
       <div>
-        <h1>Bonjour <span id="hub-username"></span> <span class="hub-wave">👋</span></h1>
+        <h1><span id="hub-greeting">Bonjour</span> <span id="hub-username"></span> <span class="hub-wave">👋</span></h1>
         <p class="hub-summary" id="hub-summary">Chargement…</p>
       </div>
       <button class="hub-refresh-btn" onclick="loadHubStats()">
@@ -2027,6 +2027,16 @@ async function showHub() {
   if (stHdr) stHdr.innerHTML = '';
   const nameEl = document.getElementById('hub-username');
   if (nameEl) nameEl.textContent = currentUserName || '';
+  const greetEl = document.getElementById('hub-greeting');
+  if (greetEl) {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat('fr-CH', {
+      timeZone: 'Europe/Zurich', hour: 'numeric', minute: 'numeric', hour12: false
+    }).formatToParts(now);
+    const h = parseInt(parts.find(p => p.type === 'hour')?.value   ?? 0);
+    const m = parseInt(parts.find(p => p.type === 'minute')?.value ?? 0);
+    greetEl.textContent = (h * 60 + m) >= 17 * 60 + 30 ? 'Bonsoir' : 'Bonjour';
+  }
   await loadHubStats();
 }
 
