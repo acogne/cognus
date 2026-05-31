@@ -1114,6 +1114,7 @@ let isAdmin = false;
 let currentBadgeFilter = null;
 let currentDateFilter  = null;
 let bgRefreshTimer = null;
+let hubRefreshTimer = null;
 let _refreshPending = false; // re-rendu en attente (fetch fait mais édition en cours)
 
 function nowISO() { return new Date().toISOString(); } // UTC explicite avec Z
@@ -2082,6 +2083,13 @@ function startBackgroundRefresh() {
 function stopBackgroundRefresh() {
   if (bgRefreshTimer) { clearInterval(bgRefreshTimer); bgRefreshTimer = null; }
 }
+function startHubRefresh() {
+  stopHubRefresh();
+  hubRefreshTimer = setInterval(loadHubStats, 60000);
+}
+function stopHubRefresh() {
+  if (hubRefreshTimer) { clearInterval(hubRefreshTimer); hubRefreshTimer = null; }
+}
 
 async function backgroundRefresh() {
   if (!accessToken || pollingTimer) return;
@@ -2182,9 +2190,11 @@ async function showHub() {
   const adminBtn = document.getElementById('hub-admin-btn');
   if (adminBtn) adminBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   await loadHubStats();
+  startHubRefresh();
 }
 
 function openStation(key) {
+  stopHubRefresh();
   if (!STATIONS[key]) return;
   currentStation = key;
   localStorage.setItem('last_station', key);
