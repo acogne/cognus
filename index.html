@@ -2001,6 +2001,8 @@ async function showHub() {
   document.documentElement.style.removeProperty('--brand-text');
   const btn = document.getElementById('btn-back-hub');
   if (btn) btn.style.display = 'none';
+  const stHdr = document.getElementById('station-header');
+  if (stHdr) stHdr.innerHTML = '';
   const nameEl = document.getElementById('hub-username');
   if (nameEl) nameEl.textContent = currentUserName || '';
   await loadHubStats();
