@@ -2078,22 +2078,23 @@ function stopPolling() {
 // ── BACKGROUND REFRESH (toutes les 60s) ───────────────────────────────────────
 function startBackgroundRefresh() {
   stopBackgroundRefresh();
-  bgRefreshTimer = setInterval(backgroundRefresh, 60000);
+  bgRefreshTimer = setInterval(backgroundRefresh, 30000);
 }
 function stopBackgroundRefresh() {
   if (bgRefreshTimer) { clearInterval(bgRefreshTimer); bgRefreshTimer = null; }
 }
 function startHubRefresh() {
   stopHubRefresh();
-  hubRefreshTimer = setInterval(loadHubStats, 60000);
+  hubRefreshTimer = setInterval(loadHubStats, 30000);
 }
 function stopHubRefresh() {
   if (hubRefreshTimer) { clearInterval(hubRefreshTimer); hubRefreshTimer = null; }
 }
 
 async function backgroundRefresh() {
-  if (!accessToken || pollingTimer) return;
+  if (!accessToken || !currentStation || pollingTimer) return;
   try {
+    await ensureFreshToken();
     const prevPendingIds = new Set(
       allEpisodes.filter(e => e.etat !== 'Publié' && e.etat !== 'Publier').map(e => e.rowIndex)
     );
