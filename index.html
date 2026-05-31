@@ -721,6 +721,52 @@
   @supports not selector(:has(*)) {
     .hub-card:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(0,0,0,0.1); border-color:var(--c); }
   }
+
+/* ── ADMIN ─────────────────────────────────────────────── */
+#admin-screen { background: #f6f5f1; min-height: 100vh; }
+.admin-page { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
+.admin-header { display:flex; align-items:center; gap:16px; margin-bottom:32px; }
+.admin-header h2 { font-size:1.4rem; font-weight:700; color:#0a0a0a; }
+.admin-back { display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #e6e3da; border-radius:8px; padding:7px 14px; font-family:'Montserrat',sans-serif; font-size:0.82rem; font-weight:500; color:#4a4a48; cursor:pointer; transition:all 0.15s; }
+.admin-back:hover { border-color:#8a8a85; color:#0a0a0a; }
+
+.admin-section { background:#fff; border:1px solid #e6e3da; border-radius:12px; padding:24px; margin-bottom:20px; }
+.admin-section h3 { font-size:1rem; font-weight:700; color:#0a0a0a; margin-bottom:16px; }
+
+.admin-email-list { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.admin-email-row { display:flex; align-items:center; gap:10px; padding:8px 12px; background:#f6f5f1; border-radius:8px; font-size:0.85rem; }
+.admin-email-row .email { flex:1; color:#0a0a0a; font-weight:500; }
+.admin-email-row .badge-admin { background:#0a0a0a; color:#fff; font-size:0.68rem; font-weight:600; padding:2px 8px; border-radius:999px; text-transform:uppercase; letter-spacing:0.06em; }
+.admin-email-row .admin-del { background:none; border:none; cursor:pointer; color:#8a8a85; padding:2px 6px; border-radius:4px; font-size:0.78rem; transition:all 0.15s; margin-left:auto; }
+.admin-email-row .admin-del:hover { color:#DC0814; background:#fff0f2; }
+
+.admin-add-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.admin-email-input { flex:1; min-width:200px; padding:8px 12px; border:1px solid #e6e3da; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:0.85rem; }
+.admin-email-input:focus { outline:none; border-color:#8a8a85; }
+.admin-check-label { display:flex; align-items:center; gap:5px; font-size:0.82rem; color:#4a4a48; white-space:nowrap; cursor:pointer; }
+.admin-add-btn { padding:8px 18px; background:#0a0a0a; border:none; border-radius:8px; color:#fff; font-family:'Montserrat',sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; transition:opacity 0.15s; }
+.admin-add-btn:hover { opacity:0.8; }
+
+.admin-stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+.admin-station-block { background:#f6f5f1; border-radius:10px; padding:16px; }
+.admin-station-block h4 { font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#4a4a48; margin-bottom:12px; }
+.admin-stat-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #efece4; font-size:0.82rem; }
+.admin-stat-row:last-child { border-bottom:none; }
+.admin-stat-label { color:#4a4a48; }
+.admin-stat-value { font-weight:700; color:#0a0a0a; }
+
+.admin-table-wrap { overflow-x:auto; }
+.admin-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.admin-table th { text-align:left; padding:8px 12px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:#8a8a85; border-bottom:2px solid #efece4; }
+.admin-table td { padding:10px 12px; border-bottom:1px solid #f6f5f1; }
+.admin-table tr:last-child td { border-bottom:none; }
+.admin-table .rank { font-weight:700; color:#8a8a85; width:32px; }
+.admin-table .person { font-weight:600; color:#0a0a0a; }
+.admin-table .count { font-weight:700; color:#0a0a0a; text-align:right; }
+.admin-loading { color:#8a8a85; font-size:0.85rem; text-align:center; padding:24px; }
+
+.hub-admin-btn { display:none; align-items:center; gap:6px; background:#0a0a0a; border:none; border-radius:8px; padding:9px 16px; font-family:'Montserrat',sans-serif; font-size:0.82rem; font-weight:600; color:#fff; cursor:pointer; transition:opacity 0.15s; }
+.hub-admin-btn:hover { opacity:0.8; }
 </style>
 </head>
 <body>
@@ -847,10 +893,13 @@
         <h1><span id="hub-greeting">Bonjour</span> <span id="hub-username"></span> <span class="hub-wave">👋</span></h1>
         <p class="hub-summary" id="hub-summary">Chargement…</p>
       </div>
-      <button class="hub-refresh-btn" onclick="loadHubStats()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        Actualiser
-      </button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="hub-admin-btn" id="hub-admin-btn" onclick="showAdmin()" style="display:none">⚙ Admin</button>
+        <button class="hub-refresh-btn" onclick="loadHubStats()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          Actualiser
+        </button>
+      </div>
     </section>
     <div class="hub-grid">
 
@@ -962,6 +1011,52 @@
   </div>
 </div>
 
+<div id="access-denied-screen" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:16px; background:#f6f5f1;">
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC0814" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+  <h2 style="font-family:'Montserrat',sans-serif;font-weight:700;color:#0a0a0a;">Accès refusé</h2>
+  <p style="font-family:'Montserrat',sans-serif;color:#4a4a48;font-size:0.9rem;">Votre adresse e-mail n'est pas autorisée à accéder à Cognus.</p>
+  <button onclick="document.getElementById('btn-signout').click()" style="font-family:'Montserrat',sans-serif;padding:10px 20px;background:#0a0a0a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Se déconnecter</button>
+</div>
+
+<div id="admin-screen" style="display:none">
+  <div class="admin-page">
+    <div class="admin-header">
+      <button class="admin-back" onclick="showHub()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour
+      </button>
+      <h2>Administration Cognus</h2>
+    </div>
+
+    <!-- WHITELIST -->
+    <section class="admin-section">
+      <h3>Utilisateurs autorisés</h3>
+      <div class="admin-email-list" id="admin-email-list">Chargement…</div>
+      <div class="admin-add-row">
+        <input class="admin-email-input" id="admin-new-email" type="email" placeholder="prenom@exemple.com">
+        <label class="admin-check-label">
+          <input type="checkbox" id="admin-new-is-admin"> Admin
+        </label>
+        <button class="admin-add-btn" onclick="adminAddEmail()">Ajouter</button>
+      </div>
+    </section>
+
+    <!-- STATS GLOBALES -->
+    <section class="admin-section">
+      <h3>Statistiques</h3>
+      <div class="admin-stats-grid" id="admin-stats-grid">
+        <div class="admin-loading">Chargement des données…</div>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD GLOBAL -->
+    <section class="admin-section">
+      <h3>Classement global — publications</h3>
+      <div id="admin-leaderboard-global" class="admin-table-wrap"></div>
+    </section>
+  </div>
+</div>
+
 <div id="notif-new"></div>
 <div id="toast"></div>
 
@@ -1012,7 +1107,10 @@ let allEpisodes = [], currentFilter = 'pending', searchQuery = '';
 let pendingPublish = null;
 let sessionRestored = false;
 let pollingTimer = null, pollingRowIndex = null, pollingAttempts = 0, pollingIsRepublish = false;
-let currentUserName = '';
+let currentUserName  = '';
+let currentUserEmail = '';
+let authorizedEmails = [];
+let isAdmin = false;
 let currentBadgeFilter = null;
 let currentDateFilter  = null;
 let bgRefreshTimer = null;
@@ -1122,8 +1220,11 @@ document.getElementById('btn-signout').addEventListener('click', () => {
   localStorage.removeItem('last_station');
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('hub-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('access-denied-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('user-info').style.display = 'none';
+  authorizedEmails = []; isAdmin = false;
   const btn = document.getElementById('btn-back-hub');
   if (btn) btn.style.display = 'none';
   document.documentElement.style.removeProperty('--brand');
@@ -1135,7 +1236,8 @@ async function fetchUserInfo() {
     headers: { Authorization: 'Bearer ' + accessToken }
   });
   const u = await r.json();
-  currentUserName = u.name || [u.given_name, u.family_name].filter(Boolean).join(' ') || u.email || '';
+  currentUserName  = u.name || [u.given_name, u.family_name].filter(Boolean).join(' ') || u.email || '';
+  currentUserEmail = u.email || '';
   document.getElementById('user-name').textContent = currentUserName || u.email;
   if (u.picture) document.getElementById('user-avatar').src = u.picture;
   document.getElementById('user-info').style.display = 'flex';
@@ -1154,18 +1256,21 @@ function parseEpisodeRow(row, i) {
   const dateModification = row[7] || '';
   const datePublication  = row[8] || '';
   const modifiedBy       = row[9] || '';
+  const modifCount       = parseInt(row[10]) || 0;  // K
+  const publishedBy      = row[11] || '';            // L
   return {
     rowIndex: i + 2,
     titre: row[0]||'', resume: row[1]||'', excerpt: row[2]||'',
     transcript: row[3]||'', dateCreation: row[4]||'',
     etat, wpSuccess, dateModification, datePublication, modifiedBy,
+    modifCount, publishedBy,
     modifiedAfterPublish: isPublished && !!dateModification && !!datePublication && dateModification > datePublication
   };
 }
 
 async function fetchSheetData(sheetTab) {
   const tab = sheetTab || STATIONS[currentStation].sheetTab;
-  const range = encodeURIComponent(`${tab}!A2:J1000`);
+  const range = encodeURIComponent(`${tab}!A2:L1000`);
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
   const data = await r.json();
@@ -1621,16 +1726,20 @@ async function saveField(id, fieldKey, rowIndex) {
     const range  = encodeURIComponent(`${_tab}!${colLetter}${rowIndex}`);
     const rangeH = encodeURIComponent(`${_tab}!H${rowIndex}`);
     const rangeJ = encodeURIComponent(`${_tab}!J${rowIndex}`);
+    const rangeK = encodeURIComponent(`${_tab}!K${rowIndex}`);
     const url  = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
     const urlH = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeH}?valueInputOption=RAW`;
     const urlJ = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeJ}?valueInputOption=RAW`;
+    const urlK = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeK}?valueInputOption=RAW`;
     const now = nowISO();
     const authHeaders = { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' };
+    const newModifCount = (ep.modifCount || 0) + 1;
 
     const [r] = await Promise.all([
       fetch(url,  { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[newVal]]          }) }),
       fetch(urlH, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]             }) }),
-      fetch(urlJ, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[currentUserName]] }) })
+      fetch(urlJ, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[currentUserName]] }) }),
+      fetch(urlK, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[newModifCount]]   }) })
     ]);
     if (!r.ok) throw new Error('HTTP ' + r.status);
 
@@ -1638,6 +1747,7 @@ async function saveField(id, fieldKey, rowIndex) {
     ep[fieldKey] = newVal;
     ep.dateModification = now;
     ep.modifiedBy = currentUserName;
+    ep.modifCount = newModifCount;
     const wasPublished = ep.etat === 'Publié' || ep.etat === 'Publier';
     if (wasPublished) ep.modifiedAfterPublish = true;
 
@@ -1845,15 +1955,18 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
     const _pubTab = STATIONS[currentStation].sheetTab;
     const rangeG = encodeURIComponent(`${_pubTab}!G${rowIndex}`);
     const rangeI = encodeURIComponent(`${_pubTab}!I${rowIndex}`);
+    const rangeL = encodeURIComponent(`${_pubTab}!L${rowIndex}`);
     const urlG = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeG}?valueInputOption=RAW`;
     const urlI = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeI}?valueInputOption=RAW`;
+    const urlL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeL}?valueInputOption=RAW`;
 
     // On efface G (Make.com écrira "Success") et on note la date en I.
     // La colonne F (état) n'est PAS modifiée ici : elle passera à "Publié"
     // uniquement quand le polling confirmera la réception WordPress.
     const [sheetRespG] = await Promise.all([
-      fetch(urlG, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [['']]  }) }),
-      fetch(urlI, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]] }) })
+      fetch(urlG, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [['']]              }) }),
+      fetch(urlI, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[now]]             }) }),
+      fetch(urlL, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ values: [[currentUserName]] }) })
     ]);
     if (!sheetRespG.ok) throw new Error('Google Sheets — HTTP ' + sheetRespG.status);
 
@@ -1861,6 +1974,7 @@ async function publishEpisode(rowIndex, ep, isRepublish = false) {
     if (idx !== -1) {
       allEpisodes[idx].datePublication = now;
       allEpisodes[idx].wpSuccess = '';
+      allEpisodes[idx].publishedBy = currentUserName;
       if (isRepublish) allEpisodes[idx].modifiedAfterPublish = false; // cache le bouton Republier
     }
     // Positionner pollingRowIndex AVANT renderEpisodes pour que la condition
@@ -1917,11 +2031,27 @@ async function pollForSuccess(rowIndex) {
         // Écrire "Publié" dans la colonne F maintenant que WordPress a confirmé
         const rangeF = encodeURIComponent(`${_pollTab}!F${rowIndex}`);
         const urlF = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeF}?valueInputOption=RAW`;
-        fetch(urlF, {
-          method: 'PUT',
-          headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ values: [['Publié']] })
-        }).catch(() => {});
+        const pollWrites = [
+          fetch(urlF, {
+            method: 'PUT',
+            headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ values: [['Publié']] })
+          })
+        ];
+        // Écrire publishedBy en colonne L si pas encore renseigné
+        if (ep && !ep.publishedBy && currentUserName) {
+          const rangeLpoll = encodeURIComponent(`${_pollTab}!L${rowIndex}`);
+          const urlLpoll = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeLpoll}?valueInputOption=RAW`;
+          pollWrites.push(
+            fetch(urlLpoll, {
+              method: 'PUT',
+              headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ values: [[currentUserName]] })
+            })
+          );
+          ep.publishedBy = currentUserName;
+        }
+        Promise.all(pollWrites).catch(() => {});
         updateStats();
         _doRenderWithOpenCards();
         showToast('✓ WordPress confirmé — épisode déplacé dans "Publiés"', 'success');
@@ -2022,6 +2152,7 @@ function showToast(msg, type) {
 async function showHub() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'none';
   document.getElementById('hub-screen').style.display = 'block';
   stopPolling(); stopBackgroundRefresh();
   currentStation = null;
@@ -2043,6 +2174,13 @@ async function showHub() {
     const m = parseInt(parts.find(p => p.type === 'minute')?.value ?? 0);
     greetEl.textContent = (h * 60 + m) >= 17 * 60 + 30 ? 'Bonsoir' : 'Bonjour';
   }
+  await loadConfig();
+  if (authorizedEmails.length > 0 && !authorizedEmails.includes(currentUserEmail.toLowerCase())) {
+    showAccessDenied();
+    return;
+  }
+  const adminBtn = document.getElementById('hub-admin-btn');
+  if (adminBtn) adminBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   await loadHubStats();
 }
 
@@ -2117,6 +2255,210 @@ async function loadHubStats() {
   } catch(e) {
     const summaryEl = document.getElementById('hub-summary');
     if (summaryEl) summaryEl.textContent = 'Impossible de charger les données.';
+  }
+}
+
+// ── CONFIG / WHITELIST ────────────────────────────────────────────────────────
+
+async function loadConfig() {
+  try {
+    const range = encodeURIComponent(`Cognus_Config!A2:B100`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+    const data = await r.json();
+    authorizedEmails = (data.values || []).map(row => (row[0] || '').toLowerCase().trim());
+    // Récupérer le statut admin de l'utilisateur courant
+    const userRow = (data.values || []).find(row => (row[0]||'').toLowerCase().trim() === (currentUserEmail||'').toLowerCase());
+    isAdmin = userRow ? (userRow[1]||'').toUpperCase() === 'TRUE' : false;
+  } catch(e) {
+    // Si la sheet Config n'existe pas encore, on laisse passer (pas de restriction)
+    authorizedEmails = [];
+    isAdmin = false;
+  }
+}
+
+function showAccessDenied() {
+  document.getElementById('hub-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('access-denied-screen').style.display = 'flex';
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
+
+async function showAdmin() {
+  if (!isAdmin) return;
+  document.getElementById('hub-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
+  await Promise.all([renderAdminEmails(), loadAdminStats()]);
+}
+
+// --- WHITELIST ---
+
+async function renderAdminEmails() {
+  const list = document.getElementById('admin-email-list');
+  list.innerHTML = '<div class="admin-loading">Chargement…</div>';
+  try {
+    await ensureFreshToken();
+    const range = encodeURIComponent(`Cognus_Config!A2:B100`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+    const data = await r.json();
+    const rows = data.values || [];
+    if (!rows.length) { list.innerHTML = '<p style="color:#8a8a85;font-size:0.85rem;">Aucun email enregistré.</p>'; return; }
+    list.innerHTML = rows.map((row, i) => {
+      const email = escHtml(row[0] || '');
+      const isAdm = (row[1]||'').toUpperCase() === 'TRUE';
+      return `<div class="admin-email-row">
+        <span class="email">${email}</span>
+        ${isAdm ? '<span class="badge-admin">Admin</span>' : ''}
+        <button class="admin-del" onclick="adminDeleteEmail(${i+2})" title="Supprimer">✕</button>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<p style="color:#DC0814;font-size:0.82rem;">Erreur de chargement.</p>';
+  }
+}
+
+async function adminAddEmail() {
+  const emailInput = document.getElementById('admin-new-email');
+  const isAdmCheck = document.getElementById('admin-new-is-admin');
+  const email = emailInput.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { showToast('Email invalide', 'error'); return; }
+  try {
+    await ensureFreshToken();
+    // Trouver la première ligne vide
+    const rangeGet = encodeURIComponent(`Cognus_Config!A2:A100`);
+    const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeGet}`, { headers: { Authorization: 'Bearer ' + accessToken } });
+    const data = await r.json();
+    const nextRow = 2 + (data.values || []).length;
+    const rangeSet = encodeURIComponent(`Cognus_Config!A${nextRow}:B${nextRow}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rangeSet}?valueInputOption=RAW`;
+    await fetch(url, {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [[email, isAdmCheck.checked ? 'TRUE' : 'FALSE']] })
+    });
+    emailInput.value = '';
+    isAdmCheck.checked = false;
+    showToast('Email ajouté', 'success');
+    await renderAdminEmails();
+    await loadConfig(); // refresh la liste en mémoire
+  } catch(e) {
+    showToast('Erreur : ' + e.message, 'error');
+  }
+}
+
+async function adminDeleteEmail(rowNum) {
+  try {
+    await ensureFreshToken();
+    const range = encodeURIComponent(`Cognus_Config!A${rowNum}:B${rowNum}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`;
+    await fetch(url, {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [['', '']] })
+    });
+    showToast('Email supprimé', 'success');
+    await renderAdminEmails();
+    await loadConfig();
+  } catch(e) {
+    showToast('Erreur : ' + e.message, 'error');
+  }
+}
+
+// --- STATS ---
+
+async function loadAdminStats() {
+  const grid = document.getElementById('admin-stats-grid');
+  const leaderGlobal = document.getElementById('admin-leaderboard-global');
+  grid.innerHTML = '<div class="admin-loading">Chargement des données…</div>';
+  leaderGlobal.innerHTML = '';
+  try {
+    await ensureFreshToken();
+    const keys = Object.keys(STATIONS);
+    const results = await Promise.all(keys.map(k => fetchSheetData(STATIONS[k].sheetTab).catch(() => [])));
+
+    const globalPublishers = {}; // { name: count }
+    let stationsHtml = '';
+
+    results.forEach((episodes, i) => {
+      const key = keys[i];
+      const st = STATIONS[key];
+      const published = episodes.filter(e => e.etat === 'Publié' || e.etat === 'Publier');
+      const pubCount = published.length;
+
+      // Modifiés avant publication = dateModif existe ET dateModif < datePub
+      const modifBeforePub = published.filter(e => e.dateModification && e.datePublication && e.dateModification < e.datePublication).length;
+
+      // Modifié après publication
+      const modifAfterPub = published.filter(e => e.modifiedAfterPublish || (e.dateModification && e.datePublication && e.dateModification > e.datePublication)).length;
+
+      // Moyenne de modifications par épisode (colonne K = modifCount)
+      const totalModifs = episodes.reduce((sum, e) => sum + (parseInt(e.modifCount) || 0), 0);
+      const avgModifs = episodes.length > 0 ? (totalModifs / episodes.length).toFixed(1) : '—';
+
+      // Temps de réaction moyen (dateCreation → datePublication) en heures
+      const reactionTimes = published
+        .filter(e => e.dateCreation && e.datePublication)
+        .map(e => (parseDate(e.datePublication) - parseDate(e.dateCreation)) / 3600000);
+      const avgReaction = reactionTimes.length > 0
+        ? (reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length)
+        : null;
+      const avgReactionStr = avgReaction !== null
+        ? avgReaction < 24 ? `${avgReaction.toFixed(1)} h` : `${(avgReaction/24).toFixed(1)} j`
+        : '—';
+
+      // Leaderboard par station (publishedBy, fallback modifiedBy)
+      const publishers = {};
+      published.forEach(e => {
+        const person = e.publishedBy || e.modifiedBy;
+        if (person) publishers[person] = (publishers[person] || 0) + 1;
+      });
+      Object.entries(publishers).forEach(([name, count]) => {
+        globalPublishers[name] = (globalPublishers[name] || 0) + count;
+      });
+      const topPublishers = Object.entries(publishers).sort((a,b) => b[1]-a[1]).slice(0,5);
+
+      stationsHtml += `
+        <div class="admin-station-block">
+          <h4 style="border-bottom:2px solid ${st.color};padding-bottom:6px;margin-bottom:10px;color:${st.color}">${st.label}</h4>
+          <div class="admin-stat-row"><span class="admin-stat-label">Épisodes publiés</span><span class="admin-stat-value">${pubCount}</span></div>
+          <div class="admin-stat-row"><span class="admin-stat-label">Modifiés avant pub.</span><span class="admin-stat-value">${modifBeforePub}</span></div>
+          <div class="admin-stat-row"><span class="admin-stat-label">Modifiés après pub.</span><span class="admin-stat-value">${modifAfterPub}</span></div>
+          <div class="admin-stat-row"><span class="admin-stat-label">Moy. modifications</span><span class="admin-stat-value">${avgModifs}</span></div>
+          <div class="admin-stat-row"><span class="admin-stat-label">Temps réaction moy.</span><span class="admin-stat-value">${avgReactionStr}</span></div>
+          ${topPublishers.length ? `
+          <div style="margin-top:10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#8a8a85;margin-bottom:6px;">Top publications</div>
+          ${topPublishers.map(([name,count],idx) => `
+            <div class="admin-stat-row">
+              <span class="admin-stat-label">${idx+1}. ${escHtml(name)}</span>
+              <span class="admin-stat-value">${count}</span>
+            </div>`).join('')}` : ''}
+        </div>`;
+    });
+
+    grid.innerHTML = stationsHtml;
+
+    // Leaderboard global
+    const globalTop = Object.entries(globalPublishers).sort((a,b) => b[1]-a[1]);
+    if (globalTop.length) {
+      leaderGlobal.innerHTML = `
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>Collaborateur</th><th style="text-align:right">Publications</th></tr></thead>
+          <tbody>${globalTop.map(([name,count],i) => `
+            <tr>
+              <td class="rank">${i+1}</td>
+              <td class="person">${escHtml(name)}</td>
+              <td class="count">${count}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    } else {
+      leaderGlobal.innerHTML = '<p class="admin-loading">Aucune donnée disponible — les colonnes publishedBy/modifiedBy doivent être renseignées.</p>';
+    }
+
+  } catch(e) {
+    grid.innerHTML = `<p style="color:#DC0814;font-size:0.82rem;">Erreur : ${escHtml(e.message)}</p>`;
   }
 }
 
