@@ -1,5 +1,8 @@
-const CACHE = 'cognus-v1';
-const SHELL = ['./index.html', './Picto Cognus.png', './manifest.json'];
+const CACHE = 'cognus-v2';
+const SHELL = [
+  './index.html', './Picto Cognus.png', './manifest.json',
+  './One%20FM.png', './Radio%20Lac.png', './LFM.png', './Rouge.png'
+];
 
 // Installation : mise en cache des ressources statiques
 self.addEventListener('install', e => {
