@@ -1392,13 +1392,15 @@ function renderEpisodes() {
           <span class="last-modified" id="lastmod-${ep.rowIndex}">Modifié le ${ep.dateModification ? formatModDate(ep.dateModification) : formatModDate()}${(ep.modifiedBy || currentUserName) ? ' par ' + escHtml(ep.modifiedBy || currentUserName) : ''}</span>
           ${ep.wpSuccess === 'Success' ? `<span class="wp-success" id="wpsuccess-${ep.rowIndex}">✓ WordPress</span>` : `<span id="wpsuccess-${ep.rowIndex}"></span>`}
           <div class="episode-btns" id="btns-${ep.rowIndex}">
-            ${!isPublished && pollingRowIndex !== ep.rowIndex ? `
+            ${!isPublished && pollingRowIndex === null ? `
               <button class="btn-publish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex})" id="pub-${ep.rowIndex}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 Publier
               </button>
+            ` : ep.rowIndex === pollingRowIndex ? `
+              <span class="wp-pending" id="wpsuccess-${ep.rowIndex}">⏳ En cours…</span>
             ` : ''}
-            ${isPublished && ep.modifiedAfterPublish ? `
+            ${isPublished && ep.modifiedAfterPublish && pollingRowIndex === null ? `
               <button class="btn-republish" onclick="event.stopPropagation(); openConfirm(${ep.rowIndex}, true)" id="repub-${ep.rowIndex}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
                 Republier
@@ -1772,6 +1774,10 @@ document.getElementById('btn-refresh').addEventListener('click', loadEpisodes);
 
 // ── CONFIRM MODAL ─────────────────────────────────────────────────────────────
 function openConfirm(rowIndex, isRepublish = false) {
+  if (pollingRowIndex !== null) {
+    showToast('Une publication est déjà en cours — attendez la confirmation WordPress avant de republier.', '');
+    return;
+  }
   const ep = allEpisodes.find(e => e.rowIndex === rowIndex);
   if (!ep) return;
   pendingPublish = { rowIndex, episode: ep, isRepublish };
