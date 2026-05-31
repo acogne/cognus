@@ -2204,6 +2204,11 @@ function openStation(key) {
   document.getElementById('hub-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
+  // Réinitialiser le filtre sur "À vérifier" à chaque ouverture de station
+  currentFilter = 'pending';
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  const pendingBtn = document.querySelector('.filter-btn[data-filter="pending"]');
+  if (pendingBtn) pendingBtn.classList.add('active');
   // Afficher logo+label de la station dans le header
   const stHdr = document.getElementById('station-header');
   if (stHdr) stHdr.innerHTML = `<img src="${st.logo}" alt="${st.label}" style="height:32px;width:auto;max-width:120px;object-fit:contain;display:block;border-radius:4px;">`;
