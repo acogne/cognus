@@ -8,7 +8,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      pages: write
+      id-token: write
+      contents: read
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -16,19 +22,24 @@ jobs:
 
       - name: Inject webhook secrets
         env:
-          WEBHOOK_ONEFM: ${{ secrets.WEBHOOK_ONEFM }}
-          WEBHOOK_LAC:   ${{ secrets.WEBHOOK_LAC }}
-          WEBHOOK_LFM:   ${{ secrets.WEBHOOK_LFM }}
-          WEBHOOK_ROUGE: ${{ secrets.WEBHOOK_ROUGE }}
+          WEBHOOK_ONEFM:  ${{ secrets.WEBHOOK_ONEFM }}
+          WEBHOOK_LAC:    ${{ secrets.WEBHOOK_LAC }}
+          WEBHOOK_LFM:    ${{ secrets.WEBHOOK_LFM }}
+          WEBHOOK_ROUGE:  ${{ secrets.WEBHOOK_ROUGE }}
         run: |
-          sed -i "s|%%WEBHOOK_ONEFM%%|$WEBHOOK_ONEFM|g" index.html
-          sed -i "s|%%WEBHOOK_LAC%%|$WEBHOOK_LAC|g"     index.html
-          sed -i "s|%%WEBHOOK_LFM%%|$WEBHOOK_LFM|g"     index.html
-          sed -i "s|%%WEBHOOK_ROUGE%%|$WEBHOOK_ROUGE|g"  index.html
+          sed -i "s|%%WEBHOOK_ONEFM%%|$WEBHOOK_ONEFM|g"   index.html
+          sed -i "s|%%WEBHOOK_LAC%%|$WEBHOOK_LAC|g"        index.html
+          sed -i "s|%%WEBHOOK_LFM%%|$WEBHOOK_LFM|g"        index.html
+          sed -i "s|%%WEBHOOK_ROUGE%%|$WEBHOOK_ROUGE|g"     index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          exclude_assets: '.github'
+        id: deployment
+        uses: actions/deploy-pages@v4
