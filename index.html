@@ -84,7 +84,56 @@
     display: block;
   }
 
-  .header-right { display: flex; align-items: center; gap: 1rem; }
+  .header-right { display: flex; align-items: center; gap: 0.75rem; }
+
+  #btn-doc {
+    display: none; align-items: center; gap: 6px;
+    background: none; border: 1px solid rgba(128,128,128,0.3);
+    color: var(--brand-text, #fff); border-radius: 8px;
+    padding: 6px 12px; font-family: 'Montserrat', sans-serif;
+    font-size: 0.78rem; font-weight: 500; cursor: pointer;
+    transition: all 0.15s; opacity: 0.8;
+  }
+  #btn-doc:hover { opacity: 1; border-color: rgba(128,128,128,0.6); }
+
+  /* ── PAGE DOCUMENTATION ───────────────────────────────── */
+  #doc-screen { background: #f6f5f1; min-height: 100vh; }
+  .doc-page { max-width: 820px; margin: 0 auto; padding: 36px 24px 80px; }
+  .doc-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; flex-wrap: wrap; gap: 12px; }
+  .doc-back { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #e6e3da; border-radius: 8px; padding: 7px 14px; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 500; color: #4a4a48; cursor: pointer; transition: all 0.15s; }
+  .doc-back:hover { border-color: #8a8a85; color: #0a0a0a; }
+  .doc-dl { display: inline-flex; align-items: center; gap: 7px; background: #0a0a0a; border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 600; color: #fff; cursor: pointer; transition: opacity 0.15s; }
+  .doc-dl:hover { opacity: 0.8; }
+  .doc-title { font-size: 1.6rem; font-weight: 800; color: #0a0a0a; margin-bottom: 6px; }
+  .doc-subtitle { font-size: 0.9rem; color: #4a4a48; margin-bottom: 32px; }
+  .doc-toc { background: #fff; border: 1px solid #e6e3da; border-radius: 10px; padding: 16px 20px; margin-bottom: 32px; }
+  .doc-toc h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #8a8a85; margin-bottom: 10px; }
+  .doc-toc ol { padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .doc-toc li a { color: #0a0a0a; text-decoration: none; font-size: 0.85rem; font-weight: 500; }
+  .doc-toc li a:hover { text-decoration: underline; }
+  .doc-section { margin-bottom: 36px; }
+  .doc-section h2 { font-size: 1.1rem; font-weight: 800; color: #0a0a0a; border-bottom: 2px solid #0a0a0a; padding-bottom: 8px; margin-bottom: 16px; }
+  .doc-section h3 { font-size: 0.95rem; font-weight: 700; color: #0a0a0a; margin: 18px 0 8px; }
+  .doc-section p { font-size: 0.88rem; color: #4a4a48; line-height: 1.7; margin-bottom: 10px; }
+  .doc-section ul, .doc-section ol { padding-left: 20px; margin-bottom: 10px; }
+  .doc-section li { font-size: 0.88rem; color: #4a4a48; line-height: 1.7; }
+  .doc-section strong { color: #0a0a0a; font-weight: 700; }
+  .doc-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-bottom: 14px; }
+  .doc-table th { background: #0a0a0a; color: #fff; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .doc-table td { padding: 8px 12px; border-bottom: 1px solid #e6e3da; color: #4a4a48; vertical-align: top; }
+  .doc-table tr:last-child td { border-bottom: none; }
+  .doc-table td:first-child { font-weight: 700; color: #0a0a0a; white-space: nowrap; }
+  .doc-callout { background: #fff; border-left: 3px solid #0a0a0a; border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.85rem; color: #4a4a48; line-height: 1.6; }
+  .doc-callout.warn { border-color: #DC0814; background: #fff5f5; }
+  .doc-code { background: #f0ede4; border-radius: 6px; padding: 10px 14px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #0a0a0a; margin: 8px 0; word-break: break-all; line-height: 1.6; }
+  .doc-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0; }
+  .doc-flow-step { background: #fff; border: 1px solid #e6e3da; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; color: #0a0a0a; }
+  .doc-flow-arrow { color: #8a8a85; font-size: 1rem; }
+  @media print {
+    #doc-screen { background: #fff; }
+    .doc-topbar { display: none; }
+    .doc-page { padding: 0; }
+  }
 
   #user-info {
     display: none;
@@ -784,6 +833,10 @@
     </div>
   </div>
   <div class="header-right">
+    <button id="btn-doc" onclick="showDoc()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Documentation
+    </button>
     <div id="user-info">
       <img id="user-avatar" src="" alt="Avatar">
       <span id="user-name"></span>
@@ -1018,6 +1071,281 @@
   <button onclick="document.getElementById('btn-signout').click()" style="font-family:'Montserrat',sans-serif;padding:10px 20px;background:#0a0a0a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Se déconnecter</button>
 </div>
 
+<div id="doc-screen" style="display:none">
+  <div class="doc-page">
+    <div class="doc-topbar">
+      <button class="doc-back" onclick="hideDoc()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour
+      </button>
+      <button class="doc-dl" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger (PDF)
+      </button>
+    </div>
+
+    <h1 class="doc-title">Documentation Cognus</h1>
+    <p class="doc-subtitle">Guide technique et fonctionnel — à destination des équipes de production et du développeur technique du groupe.</p>
+
+    <div class="doc-toc">
+      <h3>Table des matières</h3>
+      <ol>
+        <li><a href="#doc-overview">Vue d'ensemble</a></li>
+        <li><a href="#doc-archi">Architecture technique</a></li>
+        <li><a href="#doc-sheet">Structure du Google Sheet</a></li>
+        <li><a href="#doc-make">Intégration Make.com → WordPress</a></li>
+        <li><a href="#doc-flow">Flux complet de publication</a></li>
+        <li><a href="#doc-badges">Badges d'émission</a></li>
+        <li><a href="#doc-access">Gestion des accès</a></li>
+        <li><a href="#doc-admin">Page d'administration</a></li>
+        <li><a href="#doc-deploy">Déploiement</a></li>
+        <li><a href="#doc-maintenance">Maintenance et points d'attention</a></li>
+      </ol>
+    </div>
+
+    <!-- 1 -->
+    <div class="doc-section" id="doc-overview">
+      <h2>1. Vue d'ensemble</h2>
+      <p><strong>Cognus</strong> est un dashboard web de validation et de publication de podcasts, conçu pour les équipes de rédaction du groupe radio. Il centralise en un seul endroit les épisodes de 4 stations (One FM, Radio Lac, LFM, Rouge), permet de les valider, de les modifier et de les envoyer vers WordPress via Make.com.</p>
+      <p>L'application est un <strong>fichier HTML unique</strong> hébergé sur GitHub Pages, sans serveur ni base de données. Toutes les données sont stockées dans un Google Sheet partagé.</p>
+      <h3>Stations gérées</h3>
+      <table class="doc-table">
+        <thead><tr><th>Station</th><th>Couleur</th><th>Onglet Sheet</th></tr></thead>
+        <tbody>
+          <tr><td>One FM</td><td>#DC0814 (rouge)</td><td>One FM</td></tr>
+          <tr><td>Radio Lac</td><td>#3FCFD5 (cyan)</td><td>Radio Lac</td></tr>
+          <tr><td>LFM</td><td>#833177 (violet)</td><td>LFM</td></tr>
+          <tr><td>Rouge</td><td>#D9252E (rouge foncé)</td><td>Rouge</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 2 -->
+    <div class="doc-section" id="doc-archi">
+      <h2>2. Architecture technique</h2>
+      <h3>Stack</h3>
+      <ul>
+        <li><strong>Frontend :</strong> HTML/CSS/JavaScript pur (pas de framework), un seul fichier <code>index.html</code></li>
+        <li><strong>Authentification :</strong> Google OAuth 2.0 via Google Identity Services (GIS)</li>
+        <li><strong>Stockage des données :</strong> Google Sheets API v4</li>
+        <li><strong>Automatisation :</strong> Make.com (webhooks + scénarios)</li>
+        <li><strong>Publication :</strong> WordPress (via Make.com)</li>
+        <li><strong>Hébergement :</strong> GitHub Pages (acogne.github.io/cognus)</li>
+        <li><strong>PWA :</strong> Service Worker + manifest.json pour installation sur mobile/Chrome</li>
+      </ul>
+      <h3>Identifiants clés (dans index.html)</h3>
+      <table class="doc-table">
+        <thead><tr><th>Constante</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>CLIENT_ID</td><td>Google OAuth 2.0 Client ID (Google Cloud Console)</td></tr>
+          <tr><td>SHEET_ID</td><td>Identifiant du Google Sheet principal</td></tr>
+          <tr><td>STATIONS[key].webhook</td><td>URL du webhook Make.com par station</td></tr>
+        </tbody>
+      </table>
+      <div class="doc-callout warn">⚠ Ces identifiants sont visibles dans le code source public sur GitHub. Le dépôt doit rester <strong>privé</strong> pour protéger les webhooks Make.com.</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="doc-section" id="doc-sheet">
+      <h2>3. Structure du Google Sheet</h2>
+      <p>Le Sheet contient <strong>5 onglets</strong> : un par station + un onglet de configuration.</p>
+      <h3>Onglets station (One FM / Radio Lac / LFM / Rouge)</h3>
+      <p>Chaque onglet a la même structure, une ligne par épisode à partir de la ligne 2 :</p>
+      <table class="doc-table">
+        <thead><tr><th>Colonne</th><th>Champ</th><th>Rempli par</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>A</td><td>titre</td><td>Make.com / Cognus</td><td>Titre de l'épisode</td></tr>
+          <tr><td>B</td><td>resume</td><td>Make.com / Cognus</td><td>Résumé (peut contenir du HTML : gras, italique, liens)</td></tr>
+          <tr><td>C</td><td>excerpt</td><td>Make.com</td><td>Extrait court pour WordPress</td></tr>
+          <tr><td>D</td><td>transcript</td><td>Make.com</td><td>Transcription complète</td></tr>
+          <tr><td>E</td><td>date</td><td>Make.com</td><td>Date et heure de création de l'épisode</td></tr>
+          <tr><td>F</td><td>etat</td><td>Cognus</td><td><strong>Publié</strong> ou vide (À vérifier). Écrit par Cognus après confirmation WordPress.</td></tr>
+          <tr><td>G</td><td>wpSuccess</td><td>Make.com</td><td>Make.com écrit "Success" ici après publication WordPress réussie</td></tr>
+          <tr><td>H</td><td>dateModif</td><td>Cognus</td><td>Date ISO de la dernière modification via Cognus</td></tr>
+          <tr><td>I</td><td>datePub</td><td>Cognus</td><td>Date ISO du clic sur "Publier"</td></tr>
+          <tr><td>J</td><td>modifiedBy</td><td>Cognus</td><td>Nom de la personne ayant fait la dernière modification</td></tr>
+          <tr><td>K</td><td>modifCount</td><td>Cognus</td><td>Compteur du nombre de modifications effectuées</td></tr>
+          <tr><td>L</td><td>publishedBy</td><td>Cognus</td><td>Nom de la personne ayant cliqué "Publier"</td></tr>
+        </tbody>
+      </table>
+      <h3>Onglet Cognus_Config</h3>
+      <p>Contient la liste des utilisateurs autorisés à accéder à l'application :</p>
+      <table class="doc-table">
+        <thead><tr><th>Colonne A</th><th>Colonne B</th></tr></thead>
+        <tbody>
+          <tr><td>email (en-tête)</td><td>admin (en-tête)</td></tr>
+          <tr><td>prenom@example.com</td><td>TRUE → accès admin / FALSE → accès standard</td></tr>
+        </tbody>
+      </table>
+      <div class="doc-callout">Si la liste est vide ou si l'onglet n'existe pas, tout utilisateur Google peut se connecter (mode ouvert).</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="doc-section" id="doc-make">
+      <h2>4. Intégration Make.com → WordPress</h2>
+      <h3>Principe général</h3>
+      <p>Chaque station possède un <strong>scénario Make.com indépendant</strong>. Le scénario est déclenché par un webhook HTTP que Cognus envoie au moment de la publication.</p>
+      <h3>URLs des webhooks</h3>
+      <table class="doc-table">
+        <thead><tr><th>Station</th><th>Webhook Make.com</th></tr></thead>
+        <tbody>
+          <tr><td>One FM</td><td class="doc-code" style="font-size:0.72rem">https://hook.eu2.make.com/lwvcvjkdha74brmsnei1pq53gnq9sid2</td></tr>
+          <tr><td>Radio Lac</td><td class="doc-code" style="font-size:0.72rem">https://hook.eu2.make.com/o6dmgopg534z9v2f9e49jyuj1y77htbi</td></tr>
+          <tr><td>LFM</td><td class="doc-code" style="font-size:0.72rem">https://hook.eu2.make.com/qqblnevbcmcybmqaycuh6a4mjrx845c5</td></tr>
+          <tr><td>Rouge</td><td class="doc-code" style="font-size:0.72rem">https://hook.eu2.make.com/qpyasfk2fm1wxo36gndgroxkui2s98yn</td></tr>
+        </tbody>
+      </table>
+      <h3>Données envoyées par Cognus (payload JSON)</h3>
+      <div class="doc-code">{ "titre": "...", "resume": "HTML ou texte", "excerpt": "...", "transcript": "...", "dateCreation": "..." }</div>
+      <h3>Ce que fait le scénario Make.com</h3>
+      <ol>
+        <li>Réception du webhook avec les données de l'épisode</li>
+        <li>Création ou mise à jour d'un article dans WordPress (titre, contenu, excerpt)</li>
+        <li>En cas de succès : Make.com écrit <strong>"Success"</strong> dans la colonne G du Google Sheet, à la ligne correspondante</li>
+      </ol>
+      <h3>Confirmation WordPress dans Cognus</h3>
+      <p>Après avoir cliqué "Publier", Cognus démarre un <strong>polling toutes les 5 secondes</strong> de la colonne G. Dès que "Success" est détecté :</p>
+      <ul>
+        <li>L'épisode passe en statut <strong>"Publié"</strong> (colonne F ← "Publié")</li>
+        <li>Le badge <strong>✓ WordPress</strong> s'affiche sur la carte</li>
+        <li>La carte se déplace dans l'onglet "Publiés"</li>
+      </ul>
+      <div class="doc-callout warn">⚠ Si Make.com ne répond pas dans les <strong>2 minutes</strong> (24 tentatives × 5 s), le polling s'arrête et un message d'erreur s'affiche. La colonne G reste vide et l'épisode reste en "À vérifier".</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="doc-section" id="doc-flow">
+      <h2>5. Flux complet de publication</h2>
+      <div class="doc-flow">
+        <span class="doc-flow-step">Make.com remplit le Sheet</span>
+        <span class="doc-flow-arrow">→</span>
+        <span class="doc-flow-step">Cognus détecte le nouvel épisode (refresh 30s)</span>
+        <span class="doc-flow-arrow">→</span>
+        <span class="doc-flow-step">Équipe vérifie &amp; modifie si besoin</span>
+        <span class="doc-flow-arrow">→</span>
+        <span class="doc-flow-step">Clic "Publier" → webhook Make.com</span>
+        <span class="doc-flow-arrow">→</span>
+        <span class="doc-flow-step">Make.com publie sur WordPress</span>
+        <span class="doc-flow-arrow">→</span>
+        <span class="doc-flow-step">Make.com écrit "Success" col. G</span>
+        <span class="doc-flow-arrow">→</span>
+        <span class="doc-flow-step">Cognus confirme → statut "Publié"</span>
+      </div>
+      <h3>Republication</h3>
+      <p>Si un épisode déjà publié est modifié via Cognus, un bouton <strong>"Republier"</strong> apparaît. Le flux est identique à la première publication. L'ancien article WordPress est mis à jour (selon la configuration du scénario Make.com).</p>
+      <h3>Règle de sécurité</h3>
+      <p>Il est impossible de cliquer sur "Publier" tant qu'une publication est déjà en cours (badge ⏳ visible sur une autre carte). Ceci évite les publications en doublon.</p>
+    </div>
+
+    <!-- 6 -->
+    <div class="doc-section" id="doc-badges">
+      <h2>6. Badges d'émission</h2>
+      <p>Chaque épisode affiche un badge coloré en fonction de l'<strong>heure de création</strong> (fuseau Europe/Zurich), permettant d'identifier rapidement l'émission d'origine.</p>
+      <table class="doc-table">
+        <thead><tr><th>Station</th><th>Créneau</th><th>Badge</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="3">One FM</td><td>06h00 – 10h00</td><td>Equipe du Matin</td></tr>
+          <tr><td>10h00 – 13h00</td><td>10h/13h</td></tr>
+          <tr><td>16h00 – 20h00</td><td>Happy Hour</td></tr>
+          <tr><td rowspan="3">Radio Lac</td><td>06h00 – 10h00</td><td>Le meilleur des réveils</td></tr>
+          <tr><td>10h00 – 13h00</td><td>Il suffit de demander</td></tr>
+          <tr><td>16h00 – 20h00</td><td>J'peux pas j'ai Radio Lac</td></tr>
+          <tr><td rowspan="4">LFM</td><td>06h00 – 09h00</td><td>Le 6/9</td></tr>
+          <tr><td>09h00 – 12h00</td><td>Le 9/12</td></tr>
+          <tr><td>12h00 – 13h00</td><td>Vous d'abord</td></tr>
+          <tr><td>16h00 – 19h00</td><td>Le 16/19</td></tr>
+          <tr><td rowspan="3">Rouge</td><td>06h00 – 09h00</td><td>Rouge Matin</td></tr>
+          <tr><td>09h00 – 12h00</td><td>La pause café</td></tr>
+          <tr><td>16h00 – 19h00</td><td>Le Rézo</td></tr>
+        </tbody>
+      </table>
+      <p>Ces badges sont <strong>cliquables</strong> et servent de filtre : cliquer dessus n'affiche que les épisodes du même créneau.</p>
+    </div>
+
+    <!-- 7 -->
+    <div class="doc-section" id="doc-access">
+      <h2>7. Gestion des accès</h2>
+      <p>L'accès à Cognus est contrôlé via l'onglet <strong>Cognus_Config</strong> du Google Sheet.</p>
+      <h3>Niveaux d'accès</h3>
+      <table class="doc-table">
+        <thead><tr><th>Niveau</th><th>Col. B</th><th>Accès</th></tr></thead>
+        <tbody>
+          <tr><td>Administrateur</td><td>TRUE</td><td>Dashboard complet + page Admin + Documentation</td></tr>
+          <tr><td>Utilisateur standard</td><td>FALSE</td><td>Dashboard complet (4 stations)</td></tr>
+          <tr><td>Non listé</td><td>—</td><td>Accès refusé</td></tr>
+        </tbody>
+      </table>
+      <div class="doc-callout">Si l'onglet Cognus_Config est absent ou vide, l'accès est ouvert à tous les comptes Google.</div>
+      <h3>Ajout d'un utilisateur</h3>
+      <p>Depuis la page Admin → section "Utilisateurs autorisés" → saisir l'adresse e-mail Google → cocher "Admin" si nécessaire → cliquer "Ajouter".</p>
+    </div>
+
+    <!-- 8 -->
+    <div class="doc-section" id="doc-admin">
+      <h2>8. Page d'administration</h2>
+      <p>Accessible uniquement aux administrateurs via le bouton <strong>⚙ Admin</strong> sur le hub.</p>
+      <h3>Fonctionnalités</h3>
+      <ul>
+        <li><strong>Gestion des utilisateurs :</strong> ajout et suppression des emails autorisés, attribution du rôle Admin</li>
+        <li><strong>Statistiques par station :</strong> épisodes publiés, modifiés avant/après publication, moyenne de modifications, temps de réaction moyen création → publication</li>
+        <li><strong>Classement global :</strong> personnes ayant publié le plus d'épisodes toutes stations confondues</li>
+        <li><strong>Documentation :</strong> ce document (bouton 📖 dans le header)</li>
+      </ul>
+      <div class="doc-callout">Les statistiques "modifications" et "publishedBy" ne sont alimentées qu'à partir de la mise en service de Cognus v2 (colonnes K et L du Sheet). Les épisodes antérieurs affichent "—" pour ces métriques.</div>
+    </div>
+
+    <!-- 9 -->
+    <div class="doc-section" id="doc-deploy">
+      <h2>9. Déploiement</h2>
+      <h3>GitHub Pages</h3>
+      <p>L'application est hébergée sur <strong>GitHub Pages</strong> à l'adresse <code>https://acogne.github.io/cognus/</code>. Chaque mise à jour s'effectue en remplaçant le fichier <code>index.html</code> sur le dépôt GitHub.</p>
+      <h3>Fichiers du dépôt</h3>
+      <table class="doc-table">
+        <thead><tr><th>Fichier</th><th>Rôle</th></tr></thead>
+        <tbody>
+          <tr><td>index.html</td><td>Application complète (code + styles + logique)</td></tr>
+          <tr><td>sw.js</td><td>Service Worker pour le mode PWA / hors-ligne</td></tr>
+          <tr><td>manifest.json</td><td>Métadonnées PWA (icône, nom, couleur)</td></tr>
+          <tr><td>Picto Cognus.png</td><td>Logo Cognus (favicon + header)</td></tr>
+          <tr><td>One FM.png / Radio Lac.png / LFM.png / Rouge.png</td><td>Logos des stations</td></tr>
+        </tbody>
+      </table>
+      <h3>Google Cloud Console</h3>
+      <p>L'authentification Google OAuth nécessite que le domaine <code>acogne.github.io</code> soit déclaré dans les <strong>Origines JavaScript autorisées</strong> de l'application OAuth dans Google Cloud Console → APIs & Services → Identifiants.</p>
+    </div>
+
+    <!-- 10 -->
+    <div class="doc-section" id="doc-maintenance">
+      <h2>10. Maintenance et points d'attention</h2>
+      <h3>Si Make.com ne publie plus</h3>
+      <ol>
+        <li>Vérifier que le scénario Make.com de la station est bien <strong>actif</strong></li>
+        <li>Vérifier que l'URL du webhook dans Cognus correspond au webhook actuel dans Make.com</li>
+        <li>Tester le webhook manuellement depuis Make.com</li>
+        <li>Vérifier les logs d'exécution Make.com pour identifier l'erreur WordPress</li>
+      </ol>
+      <h3>Si la connexion Google ne fonctionne plus</h3>
+      <ol>
+        <li>Vérifier que le CLIENT_ID dans <code>index.html</code> est valide (Google Cloud Console)</li>
+        <li>Vérifier que <code>acogne.github.io</code> est dans les origines autorisées</li>
+        <li>Vérifier que les APIs "Google Sheets API" et "OAuth 2.0" sont activées dans le projet GCP</li>
+      </ol>
+      <h3>Si le Sheet ne se charge pas</h3>
+      <ol>
+        <li>Vérifier que le SHEET_ID dans <code>index.html</code> est correct</li>
+        <li>Vérifier que le compte Google connecté a accès en lecture/écriture au Sheet</li>
+        <li>Vérifier que les noms d'onglets correspondent exactement : "One FM", "Radio Lac", "LFM", "Rouge", "Cognus_Config"</li>
+      </ol>
+      <h3>Mise à jour des webhooks Make.com</h3>
+      <p>Si les URLs des webhooks changent, mettre à jour l'objet <code>STATIONS</code> dans <code>index.html</code> :</p>
+      <div class="doc-code">onefm: { webhook: 'https://hook.eu2.make.com/...' }</div>
+      <div class="doc-callout warn">⚠ Après toute modification de <code>index.html</code>, re-déployer sur GitHub. Le Service Worker met en cache le fichier — forcer un rechargement complet (Ctrl+Shift+R) après déploiement si nécessaire.</div>
+    </div>
+
+    <p style="text-align:center;color:#8a8a85;font-size:0.78rem;margin-top:40px;">Documentation Cognus — Groupe Media One — <span id="doc-year"></span></p>
+  </div>
+</div>
+
 <div id="admin-screen" style="display:none">
   <div class="admin-page">
     <div class="admin-header">
@@ -1228,6 +1556,9 @@ document.getElementById('btn-signout').addEventListener('click', () => {
   authorizedEmails = []; isAdmin = false;
   const btn = document.getElementById('btn-back-hub');
   if (btn) btn.style.display = 'none';
+  const docBtn = document.getElementById('btn-doc');
+  if (docBtn) docBtn.style.display = 'none';
+  document.getElementById('doc-screen').style.display = 'none';
   document.documentElement.style.removeProperty('--brand');
   document.documentElement.style.removeProperty('--brand-text');
 });
@@ -2190,6 +2521,8 @@ async function showHub() {
   }
   const adminBtn = document.getElementById('hub-admin-btn');
   if (adminBtn) adminBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+  const docBtn = document.getElementById('btn-doc');
+  if (docBtn) docBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   await loadHubStats();
   startHubRefresh();
 }
@@ -2297,6 +2630,23 @@ function showAccessDenied() {
   document.getElementById('hub-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('access-denied-screen').style.display = 'flex';
+}
+
+// ── DOCUMENTATION ─────────────────────────────────────────────────────────────
+
+function showDoc() {
+  if (!isAdmin) return;
+  ['hub-screen','dashboard','admin-screen'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('doc-screen').style.display = 'block';
+  const y = document.getElementById('doc-year');
+  if (y) y.textContent = new Date().getFullYear();
+}
+
+function hideDoc() {
+  document.getElementById('doc-screen').style.display = 'none';
+  showHub();
 }
 
 // ── ADMIN ─────────────────────────────────────────────────────────────────────
