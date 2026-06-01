@@ -1,0 +1,45 @@
+name: Deploy Cognus
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject webhook secrets
+        env:
+          WEBHOOK_ONEFM:  ${{ secrets.WEBHOOK_ONEFM }}
+          WEBHOOK_LAC:    ${{ secrets.WEBHOOK_LAC }}
+          WEBHOOK_LFM:    ${{ secrets.WEBHOOK_LFM }}
+          WEBHOOK_ROUGE:  ${{ secrets.WEBHOOK_ROUGE }}
+        run: |
+          sed -i "s|%%WEBHOOK_ONEFM%%|$WEBHOOK_ONEFM|g"   index.html
+          sed -i "s|%%WEBHOOK_LAC%%|$WEBHOOK_LAC|g"        index.html
+          sed -i "s|%%WEBHOOK_LFM%%|$WEBHOOK_LFM|g"        index.html
+          sed -i "s|%%WEBHOOK_ROUGE%%|$WEBHOOK_ROUGE|g"     index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
