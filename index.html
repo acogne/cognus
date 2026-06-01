@@ -417,6 +417,7 @@
   .last-modified   { font-size: 0.72rem; color: var(--gray-400); white-space: nowrap; }
   .wp-success      { font-size: 0.72rem; color: var(--green); background: var(--green-pale); padding: 2px 9px; border-radius: 20px; white-space: nowrap; font-weight: 500; }
   .wp-pending      { font-size: 0.72rem; color: var(--amber); background: var(--amber-pale); padding: 2px 9px; border-radius: 20px; white-space: nowrap; font-weight: 500; }
+  .wp-error        { font-size: 0.72rem; color: #fff; background: var(--red); padding: 2px 9px; border-radius: 20px; white-space: nowrap; font-weight: 500; cursor: pointer; }
 
   #notif-new {
     position: fixed; top: 70px; left: 50%;
@@ -835,7 +836,7 @@
   <div style="display:flex;align-items:center;gap:8px;">
     <button class="btn-back-hub" id="btn-back-hub" onclick="backToHub()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      Stations
+      Radios
     </button>
     <div id="station-header" style="display:flex;align-items:center;gap:8px;"></div>
     <div class="logo">
@@ -1959,6 +1960,43 @@ function restoreCaretOffset(container, offset) {
   sel.addRange(range);
 }
 
+// Sanitize HTML : n'autorise que b/strong/i/em/a/br/p — bloque script, onclick, javascript:
+function sanitizeHtml(html) {
+  if (!html) return html;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  const ALLOWED = new Set(['B','STRONG','I','EM','A','BR','P']);
+  const SAFE_PROTOCOLS = ['https://', 'http://', 'mailto:'];
+  function clean(node) {
+    Array.from(node.childNodes).forEach(child => {
+      if (child.nodeType === 3) return; // texte brut → OK
+      if (child.nodeType !== 1) { node.removeChild(child); return; }
+      const tag = child.tagName.toUpperCase();
+      if (!ALLOWED.has(tag)) {
+        // Remplacer la balise par son contenu texte brut
+        child.replaceWith(document.createTextNode(child.textContent));
+        return;
+      }
+      // Supprimer tous les attributs sauf href/target/rel sur <a>
+      Array.from(child.attributes).forEach(attr => {
+        const name = attr.name.toLowerCase();
+        if (tag === 'A' && ['href','target','rel'].includes(name)) return;
+        child.removeAttribute(attr.name);
+      });
+      // Valider href : autoriser uniquement https, http, mailto
+      if (tag === 'A') {
+        const href = (child.getAttribute('href') || '').toLowerCase().trim();
+        if (!SAFE_PROTOCOLS.some(p => href.startsWith(p))) child.removeAttribute('href');
+        child.setAttribute('target', '_blank');
+        child.setAttribute('rel', 'noopener');
+      }
+      clean(child);
+    });
+  }
+  clean(tmp);
+  return tmp.innerHTML;
+}
+
 // Retire uniquement les spans de noms propres (conserve le reste du HTML)
 function stripProperNounSpans(html) {
   if (!html) return html;
@@ -2094,7 +2132,7 @@ async function saveField(id, fieldKey, rowIndex) {
   // Pour résumé : retirer les spans noms propres et conserver le HTML (gras/italique/liens)
   // Pour texte brut : innerText préserve les sauts de ligne
   const newVal = isRich
-    ? stripProperNounSpans(contentEl.innerHTML)
+    ? sanitizeHtml(stripProperNounSpans(contentEl.innerHTML))
     : contentEl.innerText;
   const saveBtn = document.getElementById('save-' + id);
   saveBtn.disabled = true;
@@ -2200,6 +2238,11 @@ function rteToggleLink(id) {
 function rteApplyLink(id) {
   const url = document.getElementById('linkinp-' + id).value.trim();
   if (!url || url === 'https://') { rteLinkClose(id); return; }
+  const lower = url.toLowerCase();
+  if (lower.startsWith('javascript:') || lower.startsWith('vbscript:') || lower.startsWith('data:')) {
+    showToast('URL non autorisée', 'error');
+    return;
+  }
   const rte = document.getElementById('content-' + id);
   rte.focus();
   if (_rteRange) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(_rteRange); }
@@ -2390,6 +2433,13 @@ function startPolling(rowIndex, isRepublish = false) {
 async function pollForSuccess(rowIndex) {
   pollingAttempts++;
   if (pollingAttempts > 24) { // 2 min max
+    const badgeErr = document.getElementById('wpsuccess-' + rowIndex);
+    if (badgeErr) {
+      badgeErr.className = 'wp-error';
+      badgeErr.textContent = '✕ Erreur publication';
+      badgeErr.title = 'Make.com n\'a pas répondu — cliquer pour retenter';
+      badgeErr.onclick = e => { e.stopPropagation(); badgeErr.className = ''; badgeErr.textContent = ''; badgeErr.onclick = null; };
+    }
     stopPolling();
     showToast('Make.com n\'a pas répondu dans les délais', 'error');
     return;
@@ -2648,8 +2698,8 @@ async function loadHubStats() {
     });
     const summaryEl = document.getElementById('hub-summary');
     if (summaryEl) summaryEl.innerHTML = totalPending > 0
-      ? `<b>${totalPending} épisode${totalPending>1?'s':''}</b> en attente de validation, répartis sur les 4 stations.`
-      : 'Toutes les stations sont à jour.';
+      ? `<b>${totalPending} épisode${totalPending>1?'s':''}</b> en attente de validation, répartis sur les 4 radios.`
+      : 'Toutes les radios sont à jour.';
   } catch(e) {
     const summaryEl = document.getElementById('hub-summary');
     if (summaryEl) summaryEl.textContent = 'Impossible de charger les données.';
