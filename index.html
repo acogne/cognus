@@ -1144,16 +1144,18 @@
         <li><strong>Hébergement :</strong> GitHub Pages (acogne.github.io/cognus)</li>
         <li><strong>PWA :</strong> Service Worker + manifest.json pour installation sur mobile/Chrome</li>
       </ul>
-      <h3>Identifiants clés (dans index.html)</h3>
+      <h3>Identifiants clés</h3>
       <table class="doc-table">
-        <thead><tr><th>Constante</th><th>Description</th></tr></thead>
+        <thead><tr><th>Constante</th><th>Où</th><th>Description</th></tr></thead>
         <tbody>
-          <tr><td>CLIENT_ID</td><td>Google OAuth 2.0 Client ID (Google Cloud Console)</td></tr>
-          <tr><td>SHEET_ID</td><td>Identifiant du Google Sheet principal</td></tr>
-          <tr><td>STATIONS[key].webhook</td><td>URL du webhook Make.com par station</td></tr>
+          <tr><td>CLIENT_ID</td><td>index.html</td><td>Google OAuth 2.0 Client ID (Google Cloud Console) — sans danger en public</td></tr>
+          <tr><td>SHEET_ID</td><td>index.html</td><td>Identifiant du Google Sheet principal</td></tr>
+          <tr><td>WEBHOOK_*</td><td>GitHub Secrets</td><td>URLs Make.com stockées de façon chiffrée, jamais visibles dans le code source</td></tr>
         </tbody>
       </table>
-      <div class="doc-callout warn">⚠ Ces identifiants sont visibles dans le code source public sur GitHub. Le dépôt doit rester <strong>privé</strong> pour protéger les webhooks Make.com.</div>
+      <h3>Protection des webhooks</h3>
+      <p>Les URLs des webhooks Make.com sont stockées dans les <strong>GitHub Secrets</strong> du dépôt (Settings → Secrets and variables → Actions). Un workflow GitHub Actions (<code>.github/workflows/deploy.yml</code>) les injecte dans <code>index.html</code> à chaque déploiement. Le code source public ne contient que des placeholders (<code>%%WEBHOOK_ONEFM%%</code> etc.).</p>
+      <div class="doc-callout">Le dépôt peut rester <strong>public</strong> — les webhooks sont protégés par les secrets GitHub et ne sont jamais exposés dans le code source visible.</div>
     </div>
 
     <!-- 3 -->
@@ -1175,8 +1177,9 @@
           <tr><td>H</td><td>dateModif</td><td>Cognus</td><td>Date ISO de la dernière modification via Cognus</td></tr>
           <tr><td>I</td><td>datePub</td><td>Cognus</td><td>Date ISO du clic sur "Publier"</td></tr>
           <tr><td>J</td><td>modifiedBy</td><td>Cognus</td><td>Nom de la personne ayant fait la dernière modification</td></tr>
-          <tr><td>K</td><td>modifCount</td><td>Cognus</td><td>Compteur du nombre de modifications effectuées</td></tr>
+          <tr><td>K</td><td>modifCount</td><td>Cognus</td><td>Compteur du nombre de modifications effectuées (incrémenté à chaque "Enregistrer")</td></tr>
           <tr><td>L</td><td>publishedBy</td><td>Cognus</td><td>Nom de la personne ayant cliqué "Publier"</td></tr>
+          <tr><td>M</td><td>podcastUrl</td><td>Make.com</td><td>URL de l'article publié sur WordPress — rend le titre cliquable dans Cognus</td></tr>
         </tbody>
       </table>
       <h3>Onglet Cognus_Config</h3>
@@ -1297,7 +1300,7 @@
       <p>Accessible uniquement aux administrateurs via le bouton <strong>⚙ Admin</strong> sur le hub.</p>
       <h3>Fonctionnalités</h3>
       <ul>
-        <li><strong>Gestion des utilisateurs :</strong> ajout et suppression des emails autorisés, attribution du rôle Admin</li>
+        <li><strong>Gestion des utilisateurs :</strong> ajout, suppression, et bascule du rôle Admin (★ Admin / ☆ Standard) pour chaque utilisateur inscrit</li>
         <li><strong>Statistiques par station :</strong> épisodes publiés, modifiés avant/après publication, moyenne de modifications, temps de réaction moyen création → publication</li>
         <li><strong>Classement global :</strong> personnes ayant publié le plus d'épisodes toutes stations confondues</li>
         <li><strong>Documentation :</strong> ce document (bouton 📖 dans le header)</li>
@@ -1308,17 +1311,37 @@
     <!-- 9 -->
     <div class="doc-section" id="doc-deploy">
       <h2>9. Déploiement</h2>
-      <h3>GitHub Pages</h3>
-      <p>L'application est hébergée sur <strong>GitHub Pages</strong> à l'adresse <code>https://acogne.github.io/cognus/</code>. Chaque mise à jour s'effectue en remplaçant le fichier <code>index.html</code> sur le dépôt GitHub.</p>
+      <h3>GitHub Pages + GitHub Actions</h3>
+      <p>L'application est hébergée sur <strong>GitHub Pages</strong> à l'adresse <code>https://acogne.github.io/cognus/</code>. Le déploiement est automatisé via <strong>GitHub Actions</strong> : chaque upload sur la branche <code>main</code> déclenche le workflow qui injecte les secrets et déploie le site.</p>
+      <h3>Processus de mise à jour</h3>
+      <ol>
+        <li>Modifier <code>index.html</code> localement (ou directement sur GitHub)</li>
+        <li>Uploader / commiter sur la branche <code>main</code></li>
+        <li>Le workflow <code>.github/workflows/deploy.yml</code> se déclenche automatiquement</li>
+        <li>Les placeholders <code>%%WEBHOOK_*%%</code> sont remplacés par les vraies URLs depuis les secrets</li>
+        <li>Le site est déployé — visible en quelques secondes</li>
+      </ol>
       <h3>Fichiers du dépôt</h3>
       <table class="doc-table">
         <thead><tr><th>Fichier</th><th>Rôle</th></tr></thead>
         <tbody>
-          <tr><td>index.html</td><td>Application complète (code + styles + logique)</td></tr>
+          <tr><td>index.html</td><td>Application complète — contient des placeholders pour les webhooks</td></tr>
+          <tr><td>.github/workflows/deploy.yml</td><td>Workflow GitHub Actions : injection des secrets + déploiement</td></tr>
           <tr><td>sw.js</td><td>Service Worker pour le mode PWA / hors-ligne</td></tr>
           <tr><td>manifest.json</td><td>Métadonnées PWA (icône, nom, couleur)</td></tr>
           <tr><td>Picto Cognus.png</td><td>Logo Cognus (favicon + header)</td></tr>
           <tr><td>One FM.png / Radio Lac.png / LFM.png / Rouge.png</td><td>Logos des stations</td></tr>
+        </tbody>
+      </table>
+      <h3>GitHub Secrets requis</h3>
+      <p>Ces 4 secrets doivent être configurés dans <strong>Settings → Secrets and variables → Actions</strong> du dépôt GitHub :</p>
+      <table class="doc-table">
+        <thead><tr><th>Secret</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>WEBHOOK_ONEFM</td><td>URL du webhook Make.com — One FM</td></tr>
+          <tr><td>WEBHOOK_LAC</td><td>URL du webhook Make.com — Radio Lac</td></tr>
+          <tr><td>WEBHOOK_LFM</td><td>URL du webhook Make.com — LFM</td></tr>
+          <tr><td>WEBHOOK_ROUGE</td><td>URL du webhook Make.com — Rouge</td></tr>
         </tbody>
       </table>
       <h3>Google Cloud Console</h3>
@@ -1348,9 +1371,22 @@
         <li>Vérifier que les noms d'onglets correspondent exactement : "One FM", "Radio Lac", "LFM", "Rouge", "Cognus_Config"</li>
       </ol>
       <h3>Mise à jour des webhooks Make.com</h3>
-      <p>Si les URLs des webhooks changent, mettre à jour l'objet <code>STATIONS</code> dans <code>index.html</code> :</p>
-      <div class="doc-code">onefm: { webhook: 'https://hook.eu2.make.com/...' }</div>
-      <div class="doc-callout warn">⚠ Après toute modification de <code>index.html</code>, re-déployer sur GitHub. Le Service Worker met en cache le fichier — forcer un rechargement complet (Ctrl+Shift+R) après déploiement si nécessaire.</div>
+      <p>Si les URLs des webhooks changent, mettre à jour les <strong>GitHub Secrets</strong> (pas le code source) :</p>
+      <ol>
+        <li>Aller sur GitHub → Settings → Secrets and variables → Actions</li>
+        <li>Cliquer sur le secret à modifier (ex. <code>WEBHOOK_ONEFM</code>) → ✏️</li>
+        <li>Coller la nouvelle URL → "Update secret"</li>
+        <li>Déclencher un nouveau déploiement en faisant un commit quelconque sur <code>main</code></li>
+      </ol>
+      <h3>Ajout d'une 5e station</h3>
+      <ol>
+        <li>Créer un nouvel onglet dans le Google Sheet avec la même structure de colonnes A→M</li>
+        <li>Ajouter la station dans l'objet <code>STATIONS</code> dans <code>index.html</code></li>
+        <li>Ajouter un nouveau secret GitHub pour le webhook</li>
+        <li>Ajouter le <code>sed</code> correspondant dans <code>.github/workflows/deploy.yml</code></li>
+        <li>Ajouter la carte station dans le HTML du hub</li>
+      </ol>
+      <div class="doc-callout warn">⚠ Après toute modification de <code>index.html</code>, uploader sur GitHub et attendre que le workflow Actions termine (onglet Actions → job vert ✅). Le Service Worker peut mettre en cache l'ancienne version — forcer un rechargement complet (Ctrl+Shift+R) si nécessaire.</div>
     </div>
 
     <p style="text-align:center;color:#8a8a85;font-size:0.78rem;margin-top:40px;">Documentation Cognus — Groupe Media One — <span id="doc-year"></span></p>
