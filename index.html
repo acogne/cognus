@@ -2845,6 +2845,26 @@ async function loadAdminStats() {
         ? avgReaction < 24 ? `${avgReaction.toFixed(1)} h` : `${(avgReaction/24).toFixed(1)} j`
         : '—';
 
+      // Temps de réaction moyen par émission (badge)
+      const reactionByBadge = {};
+      published.filter(e => e.dateCreation && e.datePublication).forEach(e => {
+        const t = parseDate(e.dateCreation);
+        if (!t) return;
+        const hour = parseInt(
+          new Intl.DateTimeFormat('fr-CH', { timeZone: 'Europe/Zurich', hour: 'numeric', hour12: false })
+            .formatToParts(new Date(t)).find(p => p.type === 'hour')?.value ?? '-1'
+        );
+        const badge = st.badges.find(b => hour >= b.from && hour < b.to);
+        if (!badge) return;
+        if (!reactionByBadge[badge.label]) reactionByBadge[badge.label] = [];
+        reactionByBadge[badge.label].push((parseDate(e.datePublication) - parseDate(e.dateCreation)) / 3600000);
+      });
+      const reactionByBadgeStr = Object.entries(reactionByBadge).map(([label, times]) => {
+        const avg = times.reduce((a, b) => a + b, 0) / times.length;
+        const str = avg < 24 ? `${avg.toFixed(1)} h` : `${(avg/24).toFixed(1)} j`;
+        return `<div class="admin-stat-row"><span class="admin-stat-label" style="padding-left:10px">↳ ${escHtml(label)}</span><span class="admin-stat-value">${str}</span></div>`;
+      }).join('');
+
       // Leaderboard par station (publishedBy, fallback modifiedBy)
       const publishers = {};
       published.forEach(e => {
@@ -2864,6 +2884,7 @@ async function loadAdminStats() {
           <div class="admin-stat-row"><span class="admin-stat-label">Modifiés après pub.</span><span class="admin-stat-value">${modifAfterPub}</span></div>
           <div class="admin-stat-row"><span class="admin-stat-label">Moy. modifications</span><span class="admin-stat-value">${avgModifs}</span></div>
           <div class="admin-stat-row"><span class="admin-stat-label">Temps réaction moy.</span><span class="admin-stat-value">${avgReactionStr}</span></div>
+          ${reactionByBadgeStr}
           ${topPublishers.length ? `
           <div style="margin-top:10px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#8a8a85;margin-bottom:6px;">Top publications</div>
           ${topPublishers.map(([name,count],idx) => `
