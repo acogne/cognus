@@ -622,6 +622,11 @@
   }
   .btn-edit-field:hover { color: var(--gray-700); background: var(--gray-100); }
 
+  /* Labels et pictos d'édition en noir quand la carte est dépliée */
+  .episode-body.open .data-field label { color: var(--black); }
+  .episode-body.open .btn-edit-field   { color: var(--gray-400); }
+  .episode-body.open .btn-edit-field:hover { color: var(--black); background: var(--gray-100); }
+
   .field-view { display: block; }
   .field-edit { display: none; flex-direction: column; gap: 8px; }
   .field-edit.active { display: flex; }
