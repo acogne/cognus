@@ -226,13 +226,11 @@
   }
 
   .login-icon {
-    width: 56px; height: 56px;
-    background: var(--red-pale);
-    border-radius: 50%;
+    width: 72px; height: 72px;
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 1.5rem;
-    font-size: 1.5rem;
   }
+  .login-icon img { width: 72px; height: 72px; object-fit: contain; }
 
   .login-card h2 {
     font-family: 'Montserrat', sans-serif;
@@ -311,6 +309,8 @@
     box-shadow: var(--shadow); cursor: pointer; transition: border-color 0.15s;
   }
   .date-input:focus { outline: none; border-color: var(--gray-400); }
+  /* Icône calendrier visible en mode sombre */
+  [data-theme="dark"] .date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
   .date-ok {
     padding: 9px 14px;
     background: var(--black); border: none; border-radius: 10px;
@@ -971,8 +971,8 @@
 
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-icon">🎙️</div>
-    <h2>Dashboard Podcasts</h2>
+    <div class="login-icon"><img src="One-Lac Shade Transcript-2.png" alt="Cognus"></div>
+    <h2>Bienvenue sur Cognus</h2>
     <p>Connecte-toi avec ton compte Google pour accéder à la liste des podcasts à valider.</p>
     <button id="btn-login">
       <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1029,7 +1029,7 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="date-filter">
+    <div class="date-filter" onclick="if(event.target.id!=='date-ok'){const d=document.getElementById('date-input');try{d.showPicker();}catch(e){d.click();}}">
       <input class="date-input" type="date" id="date-input" title="Filtrer par date de création">
       <button class="date-ok" id="date-ok">OK</button>
     </div>
