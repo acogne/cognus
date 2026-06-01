@@ -484,6 +484,38 @@
   }
   @media (max-width: 640px) { .data-grid { grid-template-columns: 1fr; } }
 
+  /* ── RESPONSIVE MOBILE ────────────────────────────────── */
+  @media (max-width: 640px) {
+    /* Carte épisode : empilement vertical */
+    .episode-header { flex-direction: column; gap: 10px; padding: 1rem; }
+    .episode-actions { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .episode-btns { margin-left: auto; }
+    .last-modified { white-space: normal; flex: 1; }
+
+    /* Date + badge + statut sur une ligne */
+    .episode-top { flex-wrap: nowrap; gap: 6px; overflow: hidden; }
+    .episode-date { white-space: nowrap; font-size: 0.75rem; }
+    .status-badge { font-size: 0.65rem; padding: 2px 6px; }
+    .team-badge { font-size: 0.65rem; padding: 2px 6px; }
+
+    /* Titre : taille réduite, coupure correcte */
+    .episode-title { font-size: 0.9rem; word-break: break-word; overflow-wrap: break-word; }
+    .episode-excerpt { display: none; } /* masqué sur mobile, visible dans le bloc ouvert */
+
+    /* Barre de recherche + date : empiler verticalement */
+    .search-row { flex-direction: column; gap: 8px; }
+    .date-filter { width: 100%; justify-content: space-between; }
+    .date-input { flex: 1; }
+
+    /* Hub : 1 colonne */
+    .hub-greet { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .hub-greet h1 { font-size: 1.2rem; }
+
+    /* Header */
+    #user-name { display: none; }
+    .logo span { display: none; }
+  }
+
   .data-field label {
     display: flex; align-items: center; gap: 6px;
     font-size: 0.75rem; font-weight: 500;
@@ -1120,9 +1152,9 @@
       <h2>1. Vue d'ensemble</h2>
       <p><strong>Cognus</strong> est un dashboard web de validation et de publication de podcasts, conçu pour les équipes de rédaction du groupe radio. Il centralise en un seul endroit les épisodes de 4 stations (One FM, Radio Lac, LFM, Rouge), permet de les valider, de les modifier et de les envoyer vers WordPress via Make.com.</p>
       <p>L'application est un <strong>fichier HTML unique</strong> hébergé sur GitHub Pages, sans serveur ni base de données. Toutes les données sont stockées dans un Google Sheet partagé.</p>
-      <h3>Stations gérées</h3>
+      <h3>Radios gérées</h3>
       <table class="doc-table">
-        <thead><tr><th>Station</th><th>Couleur</th><th>Onglet Sheet</th></tr></thead>
+        <thead><tr><th>Radio</th><th>Couleur</th><th>Onglet Sheet</th></tr></thead>
         <tbody>
           <tr><td>One FM</td><td>#DC0814 (rouge)</td><td>One FM</td></tr>
           <tr><td>Radio Lac</td><td>#3FCFD5 (cyan)</td><td>Radio Lac</td></tr>
@@ -1157,6 +1189,12 @@
       <h3>Protection des webhooks</h3>
       <p>Les URLs des webhooks Make.com sont stockées dans les <strong>GitHub Secrets</strong> du dépôt (Settings → Secrets and variables → Actions). Un workflow GitHub Actions (<code>.github/workflows/deploy.yml</code>) les injecte dans <code>index.html</code> à chaque déploiement. Le code source public ne contient que des placeholders (<code>%%WEBHOOK_ONEFM%%</code> etc.).</p>
       <div class="doc-callout">Le dépôt peut rester <strong>public</strong> — les webhooks sont protégés par les secrets GitHub et ne sont jamais exposés dans le code source visible.</div>
+      <h3>Sécurité des données</h3>
+      <ul>
+        <li><strong>Sanitizer HTML :</strong> avant chaque sauvegarde du champ Résumé, le contenu HTML est filtré — seules les balises <code>b</code>, <code>i</code>, <code>em</code>, <code>a</code>, <code>br</code>, <code>p</code> sont conservées. Les balises <code>script</code>, attributs <code>onclick</code>, <code>style</code>, etc. sont supprimés.</li>
+        <li><strong>Validation des liens :</strong> dans l'éditeur riche, seuls les protocoles <code>https://</code>, <code>http://</code> et <code>mailto:</code> sont acceptés. Les URLs <code>javascript:</code> sont bloquées.</li>
+        <li><strong>Authentification :</strong> le token Google OAuth est stocké en <code>localStorage</code> pour éviter la reconnexion à chaque session. Le risque XSS est limité pour une app HTML statique sans contenu tiers.</li>
+      </ul>
     </div>
 
     <!-- 3 -->
@@ -1225,7 +1263,7 @@
         <li>Le badge <strong>✓ WordPress</strong> s'affiche sur la carte</li>
         <li>La carte se déplace dans l'onglet "Publiés"</li>
       </ul>
-      <div class="doc-callout warn">⚠ Si Make.com ne répond pas dans les <strong>2 minutes</strong> (24 tentatives × 5 s), le polling s'arrête et un message d'erreur s'affiche. La colonne G reste vide et l'épisode reste en "À vérifier".</div>
+      <div class="doc-callout warn">⚠ Si Make.com ne répond pas dans les <strong>2 minutes</strong> (24 tentatives × 5 s), le polling s'arrête, un badge rouge <strong>✕ Erreur publication</strong> s'affiche sur la carte, et un message d'erreur apparaît. La colonne G reste vide et l'épisode reste en "À vérifier". Le badge est cliquable pour le fermer et retenter manuellement.</div>
     </div>
 
     <!-- 5 -->
