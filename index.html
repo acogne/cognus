@@ -1407,21 +1407,21 @@ const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets https://www.goog
 
 const STATIONS = {
   onefm: { label:'One FM',    sheetTab:'One FM',    color:'#DC0814', textOn:'#fff',
-           logo:'One%20FM.png',    webhook:'https://hook.eu2.make.com/lwvcvjkdha74brmsnei1pq53gnq9sid2',
+           logo:'One%20FM.png',    webhook:'%%WEBHOOK_ONEFM%%',
            badges: [
              { from:6,  to:10, label:'Equipe du Matin', cls:'badge-morning' },
              { from:10, to:13, label:'10h/13h',          cls:'badge-midday'  },
              { from:16, to:20, label:'Happy Hour',        cls:'badge-happy'   },
            ]},
   lac:   { label:'Radio Lac', sheetTab:'Radio Lac', color:'#3FCFD5', textOn:'#093032',
-           logo:'Radio%20Lac.png', webhook:'https://hook.eu2.make.com/o6dmgopg534z9v2f9e49jyuj1y77htbi',
+           logo:'Radio%20Lac.png', webhook:'%%WEBHOOK_LAC%%',
            badges: [
              { from:6,  to:10, label:'Le meilleur des réveils',   cls:'badge-morning' },
              { from:10, to:13, label:'Il suffit de demander',      cls:'badge-midday'  },
              { from:16, to:20, label:"J'peux pas j'ai Radio Lac",  cls:'badge-happy'   },
            ]},
   lfm:   { label:'LFM',       sheetTab:'LFM',       color:'#833177', textOn:'#fff',
-           logo:'LFM.png',         webhook:'https://hook.eu2.make.com/qqblnevbcmcybmqaycuh6a4mjrx845c5',
+           logo:'LFM.png',         webhook:'%%WEBHOOK_LFM%%',
            badges: [
              { from:6,  to:9,  label:'Le 6/9',      cls:'badge-morning' },
              { from:9,  to:12, label:'Le 9/12',      cls:'badge-midday'  },
@@ -1429,7 +1429,7 @@ const STATIONS = {
              { from:16, to:19, label:'Le 16/19',     cls:'badge-happy'   },
            ]},
   rouge: { label:'Rouge',     sheetTab:'Rouge',     color:'#D9252E', textOn:'#fff',
-           logo:'Rouge.png',       webhook:'https://hook.eu2.make.com/qpyasfk2fm1wxo36gndgroxkui2s98yn',
+           logo:'Rouge.png',       webhook:'%%WEBHOOK_ROUGE%%',
            badges: [
              { from:6,  to:9,  label:'Rouge Matin',    cls:'badge-morning' },
              { from:9,  to:12, label:'La pause café',  cls:'badge-midday'  },
