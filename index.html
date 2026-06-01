@@ -399,6 +399,13 @@
     font-family: 'Montserrat', sans-serif;
     font-weight: 600; font-size: 1rem; color: var(--black); line-height: 1.4;
   }
+  .episode-title-link {
+    color: inherit; text-decoration: none;
+  }
+  .episode-title-link:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--brand, var(--black));
+  }
 
   .episode-excerpt {
     font-size: 0.85rem; color: var(--gray-400); margin-top: 4px;
@@ -1590,19 +1597,20 @@ function parseEpisodeRow(row, i) {
   const modifiedBy       = row[9] || '';
   const modifCount       = parseInt(row[10]) || 0;  // K
   const publishedBy      = row[11] || '';            // L
+  const podcastUrl       = row[12] || '';            // M
   return {
     rowIndex: i + 2,
     titre: row[0]||'', resume: row[1]||'', excerpt: row[2]||'',
     transcript: row[3]||'', dateCreation: row[4]||'',
     etat, wpSuccess, dateModification, datePublication, modifiedBy,
-    modifCount, publishedBy,
+    modifCount, publishedBy, podcastUrl,
     modifiedAfterPublish: isPublished && !!dateModification && !!datePublication && dateModification > datePublication
   };
 }
 
 async function fetchSheetData(sheetTab) {
   const tab = sheetTab || STATIONS[currentStation].sheetTab;
-  const range = encodeURIComponent(`${tab}!A2:L1000`);
+  const range = encodeURIComponent(`${tab}!A2:M1000`);
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
   const data = await r.json();
@@ -1822,7 +1830,10 @@ function renderEpisodes() {
             ${(() => { const b = getTeamBadge(ep.dateCreation); return b ? `<button class="team-badge ${b.cls}" onclick="event.stopPropagation(); filterByBadge('${b.label}')" title="Filtrer : ${b.label}">${b.label}</button>` : ''; })()}
             <span class="status-badge ${badgeClass}">${badgeLabel}</span>
           </div>
-          <div class="episode-title">${markProperNouns(escHtml(ep.titre)) || '<em style="color:var(--gray-400)">Sans titre</em>'}</div>
+          <div class="episode-title">${ep.podcastUrl
+  ? `<a href="${escHtml(ep.podcastUrl)}" target="_blank" rel="noopener" class="episode-title-link" onclick="event.stopPropagation()">${markProperNouns(escHtml(ep.titre)) || 'Sans titre'}</a>`
+  : (markProperNouns(escHtml(ep.titre)) || '<em style="color:var(--gray-400)">Sans titre</em>')
+}</div>
           ${ep.excerpt ? `<div class="episode-excerpt">${escHtml(shortExcerpt)}</div>` : ''}
         </div>
         <div class="episode-actions">
